@@ -338,17 +338,27 @@
   .loc-row b{display:block;font-size:.95rem;color:var(--forest-600);font-weight:700}
   .loc-row span{color:var(--ink)}
 
-  .map-placeholder{
-    border:2px dashed #b9cfc0;border-radius:var(--radius);
-    background:
-      radial-gradient(circle at 22% 28%, rgba(143,214,148,.35), transparent 45%),
-      radial-gradient(circle at 78% 72%, rgba(42,138,92,.18), transparent 50%),
-      linear-gradient(145deg,#eef7f0,#e2f0e6);
-    min-height:15rem;display:grid;place-items:center;text-align:center;
-    padding:2rem 1.5rem;color:var(--ink-soft);
+  /* 지도 + 길찾기 버튼 */
+  .loc-map{display:flex;flex-direction:column;gap:.75rem}
+  .map-frame{
+    flex:1 1 auto;min-height:16rem;border-radius:var(--radius);overflow:hidden;
+    border:1px solid var(--line);background:#e8efee;box-shadow:var(--shadow);
   }
-  .map-placeholder .icon{width:2.4rem;height:2.4rem;color:var(--forest-600);margin:0 auto .8rem;stroke-width:1.6}
-  .map-placeholder p{font-size:1rem;font-weight:600}
+  .map-frame iframe{display:block;width:100%;height:100%;min-height:16rem;border:0}
+  .map-actions{display:flex;flex-wrap:wrap;gap:.6rem}
+  .map-btn{
+    flex:1 1 11rem;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+    min-height:3.6rem;padding:.55rem .9rem;border-radius:14px;
+    font-weight:800;font-size:1.02rem;line-height:1.25;text-align:center;
+    text-decoration:none;border:2px solid transparent;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .map-btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(15,61,42,.16)}
+  .map-btn .ic{font-size:1.2rem;line-height:1;flex:0 0 auto}
+  .map-btn--kakao{background:#fee500;color:#191600;border-color:#f0d900}
+  .map-btn--kakao-line{background:#fff;color:#2f2a00;border-color:#f0d900}
+  .map-btn--naver{background:#03c75a;color:#fff;border-color:#03b552}
+  .map-note{font-size:.94rem;color:var(--ink-soft);line-height:1.5;text-align:center}
 
   /* ---------- 푸터 ---------- */
   .footer{background:var(--forest-900);color:#b9d3c2;padding:2.6rem 0 2.2rem;font-size:.95rem}
@@ -751,14 +761,33 @@
         </div>
       </div>
 
-      <!-- 【지도 자리】 도로명 주소가 확정되면 아래 .map-placeholder 를 지우고
-           카카오맵·네이버지도에서 제공하는 지도 삽입 코드(iframe)를 넣으시면 됩니다.
-           예: <iframe src="지도주소" width="100%" height="360" style="border:0" title="한국파크골프용품점 위치"></iframe> -->
-      <div class="map-placeholder">
-        <div>
-          <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>
-          <p>지도는 준비 중입니다.<br>위 도로명 주소로 검색하시면 찾으실 수 있습니다.</p>
+      <!-- 【지도】 화순읍 중앙로 63 (한국파크골프용품점) 위치.
+           지도는 OpenStreetMap 임베드이며, 아래 버튼은 카카오맵·네이버 지도로 연결됩니다. -->
+      <div class="loc-map">
+        <div class="map-frame">
+          <iframe
+            src="https://www.openstreetmap.org/export/embed.html?bbox=126.9845%2C35.0577%2C126.9925%2C35.0637&amp;layer=mapnik&amp;marker=35.0607184%2C126.9885264"
+            title="한국파크골프용품점 2층 위치 지도"
+            loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
+        <div class="map-actions">
+          <a class="map-btn map-btn--kakao"
+             href="https://map.kakao.com/link/map/%ED%95%9C%EA%B5%AD%ED%8C%8C%ED%81%AC%EA%B3%A8%ED%94%84%EC%9A%A9%ED%92%88%EC%A0%90,35.0607184,126.9885264"
+             target="_blank" rel="noopener">
+            <span class="ic" aria-hidden="true">🗺️</span><span>카카오맵으로 보기 / 길찾기</span>
+          </a>
+          <a class="map-btn map-btn--kakao-line"
+             href="https://map.kakao.com/link/to/%ED%95%9C%EA%B5%AD%ED%8C%8C%ED%81%AC%EA%B3%A8%ED%94%84%EC%9A%A9%ED%92%88%EC%A0%90,35.0607184,126.9885264"
+             target="_blank" rel="noopener">
+            <span class="ic" aria-hidden="true">🧭</span><span>카카오맵 바로 길찾기</span>
+          </a>
+          <a class="map-btn map-btn--naver"
+             href="https://map.naver.com/p/search/%EC%A0%84%EB%9D%BC%EB%82%A8%EB%8F%84%20%ED%99%94%EC%88%9C%EA%B5%B0%20%ED%99%94%EC%88%9C%EC%9D%8D%20%EC%A4%91%EC%95%99%EB%A1%9C%2063"
+             target="_blank" rel="noopener">
+            <span class="ic" aria-hidden="true">📍</span><span>네이버 지도에서 보기</span>
+          </a>
+        </div>
+        <p class="map-note">지도가 보이지 않으면 위 버튼을 눌러 카카오맵·네이버 지도에서 확인하실 수 있습니다.</p>
       </div>
     </div>
   </div>

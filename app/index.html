@@ -295,6 +295,18 @@
     background:var(--mint);color:var(--forest-700);font-size:.9rem;font-weight:800;
   }
   .callbtn svg{width:18px;height:18px}
+  /* ---------- 지도 길찾기 버튼 ---------- */
+  .mapbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.2rem,1fr));gap:.45rem;margin-top:.8rem}
+  .mapbtn{
+    display:flex;align-items:center;justify-content:center;gap:.35rem;
+    min-height:3.4rem;padding:.35rem .5rem;border-radius:14px;
+    font-size:.95rem;font-weight:800;line-height:1.25;text-align:center;word-break:keep-all;
+    text-decoration:none;border:2px solid transparent;
+  }
+  .mapbtn .ic{font-size:1.15rem;line-height:1;flex:none}
+  .mapbtn--kakao{background:#fee500;color:#191600;border-color:#f0d900}
+  .mapbtn--naver{background:#03c75a;color:#fff;border-color:#03b552}
+  .mapbtn:active{transform:scale(.98)}
   .note{
     font-size:.8rem;color:var(--ink-mute);line-height:1.5;
     background:#f1f6f2;border-radius:14px;padding:.7rem .85rem;margin-top:.8rem;
@@ -825,6 +837,7 @@
       <section class="sec" id="class-info">
         <div class="sec-title">강습 안내</div>
         <dl class="rows" id="classRows" style="margin-top:.6rem"></dl>
+        <div class="mapbtns" id="classMapBtns"></div>
         <p class="note" id="classNote"></p>
       </section>
 
@@ -843,6 +856,7 @@
       <section class="sec" style="margin-top:.9rem">
         <div class="sec-title">매장 안내</div>
         <dl class="rows" id="shopRows" style="margin-top:.6rem"></dl>
+        <div class="mapbtns" id="shopMapBtns"></div>
       </section>
 
       <section class="sec">
@@ -1043,6 +1057,12 @@
     kakao:      '준비 중',              // 예: 'https://pf.kakao.com/_xxxxx'
     ceo:        '준비 중',              // 대표자명
     address:    '전남광주통합특별시 화순군 화순읍 중앙로 63',   // 도로명 주소
+
+    // ---- 지도·길찾기 (카카오맵 지오코딩으로 확인한 좌표) ----
+    mapName:    '한국파크골프용품점',
+    mapLat:     35.0607184,
+    mapLng:     126.9885264,
+    mapQuery:   '전라남도 화순군 화순읍 중앙로 63',            // 네이버 지도 검색어
 
     // ---- 용품샵 ----
     shopName:    '한국파크골프용품점',
@@ -2251,6 +2271,15 @@
     return esc(v);
   }
 
+  function mapBtnsHTML(){
+    const name = encodeURIComponent(CONFIG.mapName || '한국파크골프용품점');
+    const q = encodeURIComponent(CONFIG.mapQuery || CONFIG.address || '전라남도 화순군 화순읍 중앙로 63');
+    return `<a class="mapbtn mapbtn--kakao" href="https://map.kakao.com/link/to/${name},${CONFIG.mapLat},${CONFIG.mapLng}" target="_blank" rel="noopener">
+              <span class="ic" aria-hidden="true">🗺️</span><span>카카오맵 길찾기</span></a>
+            <a class="mapbtn mapbtn--naver" href="https://map.naver.com/p/search/${q}" target="_blank" rel="noopener">
+              <span class="ic" aria-hidden="true">📍</span><span>네이버 지도 보기</span></a>`;
+  }
+
   function renderClass(){
     const rows = [
       ['교육 기관', CONFIG.className, ''],
@@ -2275,6 +2304,9 @@
       ? '아직 확정되지 않은 항목(' + missing.join(' · ') + ')은 「준비 중」으로 표시했습니다. 확정되면 이 화면에 바로 나타납니다.'
       : '';
     noteEl.hidden = !missing.length;
+
+    const mapBox = $('#classMapBtns');
+    if (mapBox) mapBox.innerHTML = mapBtnsHTML();
 
     const foot = $('#footContact');
     if (foot) {
@@ -2336,6 +2368,9 @@
           <p class="price">${esc(isPending(it.price) ? CONFIG.pendingText : it.price)}</p>
         </div>
       </article>`).join('');
+
+    const shopMap = $('#shopMapBtns');
+    if (shopMap) shopMap.innerHTML = mapBtnsHTML();
 
     const pendingShop = rows.filter(r => isPending(r[1])).map(r => r[0]);
     $('#shopNote').textContent = (pendingShop.length ? pendingShop.join('·') + ' 정보는 확정되면 이 화면에 표시됩니다. ' : '')
