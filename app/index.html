@@ -4,7 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>한국파크 | 화순·광주 파크골프</title>
-<meta name="description" content="화순·광주 파크골프 종합 앱. 한국파크골프교육협회 강습 안내, 스코어 기록, 용품샵, 가까운 파크골프장 정보를 한 곳에서.">
+<meta name="description" content="화순·광주 파크골프 종합 앱. 한국파크골프교육협회 강습 안내(매주 목·토 오후 3시, 한국파크골프용품점 2층), 스코어 기록, 용품샵, 가까운 파크골프장 정보를 한 곳에서.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="한국파크">
+<meta property="og:title" content="한국파크 | 화순·광주 파크골프">
+<meta property="og:description" content="한국파크골프교육협회 강습 안내(매주 목·토 오후 3시, 한국파크골프용품점 2층)와 스코어 기록, 용품샵, 화순·광주 파크골프장 정보를 한 곳에서.">
+<meta property="og:url" content="https://cleaner-hk-maker.github.io/hanguk-parkgolf/app/">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#0f3d2a">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -599,7 +606,7 @@
         <p class="hero-sub">화순·광주 파크골프, 강습부터 스코어 기록까지 한 곳에서</p>
         <div class="hero-chips">
           <span>매주 목·토 오후 3시</span>
-          <span>화순 명품점 2층</span>
+          <span>한국파크골프용품점 2층</span>
         </div>
         <svg class="hero-art" viewBox="0 0 200 200" fill="none" aria-hidden="true">
           <circle cx="150" cy="60" r="54" fill="#8fd694" opacity=".5"/>
@@ -615,7 +622,7 @@
         <div class="nextclass">
           <p class="nc-label">한국파크골프교육협회</p>
           <p class="nc-date" id="nextClassDate">매주 목·토 오후 3시</p>
-          <p class="nc-meta">화순 명품점 2층 · 어르신·일반인 모두</p>
+          <p class="nc-meta">한국파크골프용품점 2층 · 어르신·일반인 모두</p>
           <button class="nc-btn" data-goto="class">강습 안내 보기
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
           </button>
@@ -632,7 +639,7 @@
         <button class="qcard" data-goto="class" data-anchor="class-info">
           <span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M8.5 14.5h3"/></svg></span>
           <b>목·토 강습 안내</b>
-          <small>매주 목·토 오후 3시, 화순 명품점</small>
+          <small>매주 목·토 오후 3시, 한국파크골프용품점</small>
         </button>
         <button class="qcard" data-goto="shop">
           <span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 8h13l1 12.5h-15L5.5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span>
@@ -653,7 +660,8 @@
 
       <footer class="appfoot">
         <p>한국파크 · 한국파크골프교육협회</p>
-        <p class="small">화순 명품점 2층 · 매주 목요일·토요일 오후 3시</p>
+        <p class="small">한국파크골프용품점 2층 · 매주 목요일·토요일 오후 3시</p>
+        <p class="small" id="footContact"></p>
         <button type="button" class="adminlink" data-act="openAdmin">협회 관리자 모드</button>
       </footer>
     </section>
@@ -926,18 +934,19 @@
     className:  '한국파크골프교육협회',
     classDays:  '매주 목요일 · 토요일',
     classTime:  '오후 3시',
-    classPlace: '화순 명품점 2층',
+    classPlace: '한국파크골프용품점 2층',
     classTarget:'어르신 · 일반인 모두',
     classFee:   '준비 중',              // 예: '월 30,000원'
-    phone:      '준비 중',              // 예: '061-000-0000'
+    phone:      '061-371-0440',         // 협회 전화
+    fax:        '061-371-0441',         // 협회 팩스
     kakao:      '준비 중',              // 예: 'https://pf.kakao.com/_xxxxx'
     ceo:        '준비 중',              // 대표자명
-    address:    '준비 중',              // 도로명 주소
+    address:    '전남광주통합특별시 화순군 화순읍 중앙로 63',   // 도로명 주소
 
     // ---- 용품샵 ----
-    shopName:    '준비 중',
+    shopName:    '한국파크골프용품점',
     shopPhone:   '준비 중',
-    shopAddress: '준비 중',
+    shopAddress: '전남광주통합특별시 화순군 화순읍 중앙로 63',
     shopHours:   '준비 중',             // 예: '평일 10:00 ~ 19:00'
     shopIntro:   '화순 파크골프 용품샵에서 채·공·장갑·세트 상품을 만나보세요.',
 
@@ -2142,6 +2151,7 @@
       ['대상', CONFIG.classTarget, ''],
       ['수강료', CONFIG.classFee, ''],
       ['전화 문의', CONFIG.phone, 'phone'],
+      ['팩스', CONFIG.fax, ''],
       ['카카오톡', CONFIG.kakao, 'kakao'],
       ['대표자', CONFIG.ceo, ''],
       ['주소', CONFIG.address, '']
@@ -2156,6 +2166,14 @@
       ? '아직 확정되지 않은 항목(' + missing.join(' · ') + ')은 「준비 중」으로 표시했습니다. 확정되면 이 화면에 바로 나타납니다.'
       : '';
     noteEl.hidden = !missing.length;
+
+    const foot = $('#footContact');
+    if (foot) {
+      const parts = [];
+      if (!isPending(CONFIG.phone)) parts.push('전화 ' + CONFIG.phone);
+      if (!isPending(CONFIG.fax)) parts.push('팩스 ' + CONFIG.fax);
+      foot.textContent = parts.join(' · ');
+    }
 
     $('#courseList').innerHTML = CONFIG.courses.map(c => {
       const tags = `<span class="chip">${esc(c.area)}</span><span class="chip gray">${esc(c.holes)}</span>`;
@@ -2210,8 +2228,8 @@
         </div>
       </article>`).join('');
 
-    const pendingShop = rows.filter(r => isPending(r[1])).length;
-    $('#shopNote').textContent = (pendingShop ? '매장 정보가 확정되면 전화·주소·운영 시간이 이 화면에 표시됩니다. ' : '')
+    const pendingShop = rows.filter(r => isPending(r[1])).map(r => r[0]);
+    $('#shopNote').textContent = (pendingShop.length ? pendingShop.join('·') + ' 정보는 확정되면 이 화면에 표시됩니다. ' : '')
       + CONFIG.shopIntro + ' 가격과 재고는 매장에 문의해 주세요.';
   }
 
