@@ -193,6 +193,37 @@
   .inst-step p{font-size:.95rem;font-weight:700;line-height:1.45;color:var(--ink)}
   .inst-step p em{font-style:normal;font-weight:800;color:var(--forest-700)}
 
+  /* ---------- 앱 안 브라우저(카카오톡 등) → 크롬으로 열기 ---------- */
+  .chrome-open{margin-bottom:1rem}
+  .chrome-open-why{
+    font-size:.8rem;font-weight:800;color:var(--amber);line-height:1.4;
+    margin-bottom:.5rem;word-break:keep-all;
+  }
+  .chrome-open-why b{color:var(--forest-700)}
+  .chrome-open-btn{
+    display:flex;align-items:center;justify-content:center;gap:.5rem;
+    width:100%;min-height:62px;padding:.75rem .9rem;border-radius:16px;
+    background:var(--forest-600);color:#fff;text-decoration:none;text-align:center;
+    font-size:1.04rem;font-weight:800;letter-spacing:-0.03em;line-height:1.3;
+    word-break:keep-all;box-shadow:0 8px 18px rgba(11,47,32,.2);
+  }
+  .chrome-open-btn:active{background:var(--forest-700)}
+  .chrome-open-btn .ico{flex:none;font-size:1.2rem;line-height:1}
+  .chrome-open-steps{
+    margin-top:.6rem;background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:.75rem .85rem;display:grid;gap:.5rem;
+  }
+  .chrome-open-steps p{
+    display:flex;gap:.5rem;align-items:flex-start;
+    font-size:.92rem;font-weight:700;line-height:1.45;color:var(--ink);
+  }
+  .chrome-open-steps p b{
+    flex:none;width:23px;height:23px;border-radius:50%;
+    background:var(--mint-deep);color:var(--forest-700);
+    display:grid;place-items:center;font-size:.78rem;font-weight:800;
+  }
+  .chrome-open-steps p em{font-style:normal;font-weight:800;color:var(--forest-700)}
+
   /* ---------- 빠른 메뉴 ---------- */
   .quick{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.9rem}
   .qcard{
@@ -832,6 +863,17 @@
       <button type="button" class="sheet-close" data-act="closeInstall" aria-label="닫기">✕</button>
     </div>
     <div class="sheet-body">
+      <div class="chrome-open" id="chromeOpenBox" hidden>
+        <p class="chrome-open-why" id="chromeOpenWhy">카카오톡 같은 앱 안에서 열면 설치 창이 뜨지 않습니다</p>
+        <a class="chrome-open-btn" id="chromeOpenBtn"
+           href="intent://cleaner-hk-maker.github.io/hanguk-parkgolf/app/?mode=member#Intent;scheme=https;package=com.android.chrome;end">
+          <span class="ico" aria-hidden="true">🌐</span><span>크롬(Chrome) 브라우저로 바로 열기</span>
+        </a>
+        <div class="chrome-open-steps">
+          <p><b>1</b><span>안 열리면 오른쪽 위 <em>⋮</em> → <em>다른 브라우저(Chrome)로 열기</em>를 누릅니다.</span></p>
+          <p><b>2</b><span>크롬이 열리면 다시 <em>📲 앱 설치</em> 단추를 누릅니다.</span></p>
+        </div>
+      </div>
       <p class="sheet-lead" id="installLead">아래 두 순서만 하면 됩니다.</p>
       <div id="installSteps"></div>
       <p class="fieldhelp">설치하면 주소를 매번 찾지 않고, 바탕화면 아이콘 한 번으로 한국파크가 바로 열립니다.</p>
@@ -2663,20 +2705,63 @@
     const b = $('#installBtn');
     if (b) b.hidden = true;
   }
+  function isAndroidDevice(){
+    return /Android/i.test(navigator.userAgent || '');
+  }
+  /* 카카오톡·네이버·다음·인스타그램 같은 앱 안의 브라우저(WebView)인지 */
+  function isInAppBrowser(){
+    const ua = navigator.userAgent || '';
+    return /KAKAOTALK|NAVER\(inapp|Daum|Instagram|FBAN|FBAV|FB_IAB|Line\/|WhatsApp|Snapchat|everytimeApp|wv\)/i.test(ua);
+  }
+  /* 안드로이드인데 설치 창(beforeinstallprompt)을 쓸 수 없는 상태인지:
+     앱 안 브라우저이거나, 안드로이드 브라우저인데 설치 창이 아직 오지 않았을 때 */
+  function needsChromeHelp(){
+    if (isStandalone()) return false;
+    if (!isAndroidDevice()) return false;
+    return isInAppBrowser() || !deferredPrompt;
+  }
+  /* 지금 열려 있는 주소의 mode 값을 그대로 살려 크롬으로 넘깁니다. */
+  function chromeIntentHref(){
+    const search = (location.search || '').replace(/[#;]/g, '');
+    return 'intent://cleaner-hk-maker.github.io/hanguk-parkgolf/app/' + search +
+      '#Intent;scheme=https;package=com.android.chrome;end';
+  }
   function showInstallGuide(){
     const ios = isIOSDevice();
+    const inApp = isInAppBrowser();
+    const chromeHelp = needsChromeHelp();
+    const box = $('#installSteps');
+    const chromeBox = $('#chromeOpenBox');
+    const lead = $('#installLead');
+
+    if (chromeBox) chromeBox.hidden = !chromeHelp;
+    if (chromeHelp) {
+      const link = $('#chromeOpenBtn');
+      if (link) link.setAttribute('href', chromeIntentHref());
+      const why = $('#chromeOpenWhy');
+      if (why) {
+        why.innerHTML = inApp
+          ? '카카오톡 같은 <b>앱 안에서는</b> 설치 창이 뜨지 않습니다. <b>크롬으로 열어</b> 설치해 주세요.'
+          : '이 브라우저에서는 설치 창이 자동으로 뜨지 않았습니다. <b>크롬으로 열어</b> 설치해 주세요.';
+      }
+      if (box) { box.innerHTML = ''; box.hidden = true; }
+      if (lead) { lead.innerHTML = ''; lead.hidden = true; }
+      openSheet('#installSheet');
+      return;
+    }
+    if (lead) lead.hidden = false;
+
     const steps = ios
       ? ['아래쪽 가운데 <em>공유</em> 버튼(□↑)을 누릅니다.',
          '목록에서 <em>홈 화면에 추가</em>를 누릅니다.']
       : ['오른쪽 위 <em>⋮</em>(점 3개)를 누릅니다.',
          '<em>앱 설치</em> 또는 <em>홈 화면에 추가</em>를 누릅니다.'];
-    const box = $('#installSteps');
     if (box) {
+      box.hidden = false;
       box.innerHTML = steps.map(function(t, i){
         return '<div class="inst-step"><span class="n">' + (i + 1) + '</span><p>' + t + '</p></div>';
       }).join('');
     }
-    const lead = $('#installLead');
     if (lead) lead.textContent = (ios ? '아이폰 사파리' : '휴대폰 브라우저') + '에서 두 순서만 하면 됩니다.';
     openSheet('#installSheet');
   }
