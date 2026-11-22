@@ -160,6 +160,39 @@
   }
   .hero-art{position:absolute;right:-26px;bottom:-30px;width:190px;height:190px;opacity:.3;pointer-events:none}
 
+  /* ---------- 앱 설치 버튼 ---------- */
+  .installcard{
+    display:flex;align-items:center;gap:.65rem;width:100%;text-align:left;
+    margin-top:.8rem;padding:.75rem .85rem;border-radius:18px;
+    background:#fff7ea;border:1.5px solid #f0d9b6;
+    box-shadow:0 7px 18px rgba(169,97,26,.13);
+    transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .installcard:active{transform:scale(.98);box-shadow:0 4px 12px rgba(169,97,26,.16)}
+  .installcard .ic-ib{
+    flex:none;width:46px;height:46px;border-radius:15px;
+    background:#fdf3e4;border:1px solid #f0d9b6;
+    display:grid;place-items:center;font-size:1.45rem;line-height:1;
+  }
+  .installcard .ic-txt{flex:1;min-width:0}
+  .installcard b{display:block;font-size:.96rem;font-weight:800;letter-spacing:-0.02em;line-height:1.35;color:#4a2c06;word-break:keep-all}
+  .installcard b span{display:block}
+  .installcard small{display:block;font-size:.76rem;font-weight:700;color:#8a5516;margin-top:.15rem;line-height:1.4;word-break:keep-all}
+  .installcard .ic-go{flex:none;font-size:1.35rem;font-weight:800;color:#a9611a;line-height:1}
+  .installcard[hidden]{display:none}
+  .inst-step{
+    display:flex;gap:.6rem;align-items:flex-start;
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:.8rem .85rem;margin-top:.55rem;
+  }
+  .inst-step .n{
+    flex:none;width:27px;height:27px;border-radius:50%;
+    background:var(--forest-600);color:#fff;
+    display:grid;place-items:center;font-size:.86rem;font-weight:800;
+  }
+  .inst-step p{font-size:.95rem;font-weight:700;line-height:1.45;color:var(--ink)}
+  .inst-step p em{font-style:normal;font-weight:800;color:var(--forest-700)}
+
   /* ---------- 빠른 메뉴 ---------- */
   .quick{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.9rem}
   .qcard{
@@ -617,6 +650,15 @@
         </svg>
       </div>
 
+      <button type="button" class="installcard" id="installBtn" data-act="installApp">
+        <span class="ic-ib" aria-hidden="true">📲</span>
+        <span class="ic-txt">
+          <b><span>휴대폰 바탕화면에</span> <span>한국파크 앱 설치</span></b>
+          <small>한 번 설치하면 앱처럼 바로 열립니다</small>
+        </span>
+        <span class="ic-go" aria-hidden="true">›</span>
+      </button>
+
       <section class="sec">
         <div class="sec-title">다음 강습</div>
         <div class="nextclass">
@@ -676,7 +718,7 @@
       <div class="card setupcard" id="setupCard" style="margin-top:.8rem">
         <button type="button" class="setup-head" data-act="toggleSetup" id="setupToggle" aria-expanded="true" aria-controls="setupBody">
           <span class="setup-title">라운드 설정</span>
-          <span class="setup-sum" id="setupSum">9홀 · 2명</span>
+          <span class="setup-sum" id="setupSum">9홀 · 4명</span>
           <svg class="caret" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div id="setupBody">
@@ -697,7 +739,7 @@
           </div>
         </div>
         <div class="field">
-          <span class="flabel">이름 (비워 두면 1번·2번으로 표시)</span>
+          <span class="flabel">이름 (비워 두면 1번~4번으로 표시)</span>
           <div class="names" id="names"></div>
         </div>
         <div class="field">
@@ -779,6 +821,23 @@
       </section>
     </section>
   </main>
+
+  <!-- ================= 앱 설치 안내 ================= -->
+  <div class="sheet" id="installSheet" role="dialog" aria-modal="true" aria-labelledby="installTitle" aria-hidden="true">
+    <div class="sheet-head">
+      <div>
+        <h2 id="installTitle">휴대폰 바탕화면에 설치</h2>
+        <p>한국파크를 앱처럼 열 수 있게 합니다</p>
+      </div>
+      <button type="button" class="sheet-close" data-act="closeInstall" aria-label="닫기">✕</button>
+    </div>
+    <div class="sheet-body">
+      <p class="sheet-lead" id="installLead">아래 두 순서만 하면 됩니다.</p>
+      <div id="installSteps"></div>
+      <p class="fieldhelp">설치하면 주소를 매번 찾지 않고, 바탕화면 아이콘 한 번으로 한국파크가 바로 열립니다.</p>
+      <button type="button" class="primary wide" data-act="closeInstall">확인했어요</button>
+    </div>
+  </div>
 
   <!-- ================= 회원 본인확인 ================= -->
   <div class="sheet" id="gateSheet" role="dialog" aria-modal="true" aria-labelledby="gateTitle" aria-hidden="true">
@@ -1057,7 +1116,7 @@
     return {
       id: 'r' + Date.now() + Math.random().toString(36).slice(2, 6),
       holes: holes || 9,
-      playerCount: count || 2,
+      playerCount: count || 4,
       course: '',
       pars: DEFAULT_PARS.slice(),
       players: [0,1,2,3].map(i => ({
@@ -1069,7 +1128,7 @@
     };
   }
 
-  let state = { round: newRound(9, 2), records: [], member: null, members: [], gateSkipped: false };
+  let state = { round: newRound(9, 4), records: [], member: null, members: [], gateSkipped: false };
   let setupOpen = true;
 
   function normalizeMember(m){
@@ -1121,6 +1180,13 @@
       if (!raw) return;
       const data = JSON.parse(raw);
       if (data && data.round) state.round = normalizeRound(data.round);
+      /* 기본 인원 4명 개편(2026-11): 아직 타수를 넣지 않은 옛 저장본(기본 2명)은 한 번만 4명으로 맞춥니다. */
+      if (data && data.round && !data.default4) {
+        const touched = state.round.players.some(function(p){
+          return p.strokes.some(function(v){ return typeof v === 'number' && v > 0; });
+        });
+        if (!touched && state.round.playerCount === 2) state.round.playerCount = 4;
+      }
       if (data && Array.isArray(data.records)) {
         state.records = data.records.filter(r => r && Array.isArray(r.players)).map(r => ({
           id: String(r.id || ('rec' + Math.random().toString(36).slice(2, 8))),
@@ -1151,7 +1217,8 @@
         records: state.records,
         member: state.member,
         members: state.members,
-        gateSkipped: state.gateSkipped
+        gateSkipped: state.gateSkipped,
+        default4: true
       }));
     } catch (e) {
       canStore = false;
@@ -2498,6 +2565,10 @@
       downloadCSV();
     } else if (act === 'loadMyRounds') {
       loadMyRounds();
+    } else if (act === 'installApp') {
+      startInstall();
+    } else if (act === 'closeInstall') {
+      closeSheet('#installSheet');
     }
   });
 
@@ -2571,6 +2642,98 @@
       }
     }
   });
+
+  /* =========================================================
+     6-C. 앱 설치 (PWA) — 바탕화면 추가 단추 + 안내
+     ========================================================= */
+  let deferredPrompt = null;
+
+  function isStandalone(){
+    try {
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    } catch (e) {}
+    return navigator.standalone === true;
+  }
+  function isIOSDevice(){
+    const ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+  function hideInstallBtn(){
+    const b = $('#installBtn');
+    if (b) b.hidden = true;
+  }
+  function showInstallGuide(){
+    const ios = isIOSDevice();
+    const steps = ios
+      ? ['아래쪽 가운데 <em>공유</em> 버튼(□↑)을 누릅니다.',
+         '목록에서 <em>홈 화면에 추가</em>를 누릅니다.']
+      : ['오른쪽 위 <em>⋮</em>(점 3개)를 누릅니다.',
+         '<em>앱 설치</em> 또는 <em>홈 화면에 추가</em>를 누릅니다.'];
+    const box = $('#installSteps');
+    if (box) {
+      box.innerHTML = steps.map(function(t, i){
+        return '<div class="inst-step"><span class="n">' + (i + 1) + '</span><p>' + t + '</p></div>';
+      }).join('');
+    }
+    const lead = $('#installLead');
+    if (lead) lead.textContent = (ios ? '아이폰 사파리' : '휴대폰 브라우저') + '에서 두 순서만 하면 됩니다.';
+    openSheet('#installSheet');
+  }
+  function startInstall(){
+    if (isStandalone()) {
+      toast('이미 바탕화면에 설치되어 있어요.');
+      return;
+    }
+    if (deferredPrompt) {
+      const ev = deferredPrompt;
+      deferredPrompt = null;   /* 설치 창은 한 번만 쓸 수 있습니다. */
+      try {
+        ev.prompt();
+        ev.userChoice.then(function(res){
+          if (res && res.outcome === 'accepted') {
+            toast('설치를 시작했어요. 바탕화면을 확인해 주세요.');
+          } else {
+            toast('설치를 취소했어요. 다시 누르면 언제든 설치할 수 있어요.');
+          }
+        }).catch(function(){ showInstallGuide(); });
+      } catch (e) {
+        showInstallGuide();
+      }
+      return;
+    }
+    showInstallGuide();
+  }
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();   /* 브라우저 기본 띠 대신 앱 안 단추로 설치하게 합니다. */
+    deferredPrompt = e;
+  });
+  window.addEventListener('appinstalled', function(){
+    deferredPrompt = null;
+    hideInstallBtn();
+    closeSheet('#installSheet');
+    toast('바탕화면에 설치했어요. 이제 앱처럼 열립니다.');
+  });
+  if (isStandalone()) hideInstallBtn();   /* 이미 설치된 앱으로 열렸으면 단추를 숨김 */
+
+  /* 서비스 워커: HTML·JS는 항상 인터넷에서 새로 받고(network-first),
+     인터넷이 없을 때만 저장본을 씁니다. 그래서 고친 내용이 옛 캐시에 갇히지 않습니다. */
+  if ('serviceWorker' in navigator) {
+    const safeOrigin = location.protocol === 'https:' ||
+      location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    if (safeOrigin) {
+      window.addEventListener('load', function(){
+        /* sw.js가 없는 곳(파일만 복사해 연 경우)에서는 조용히 넘어갑니다. */
+        fetch('sw.js', { method: 'HEAD', cache: 'no-store' }).then(function(res){
+          if (!res || !res.ok) return null;
+          return navigator.serviceWorker.register('sw.js');
+        }).catch(function(){
+          /* 설치 지원만 못 켜고 앱은 그대로 동작합니다. */
+        });
+      });
+    }
+  }
 
   /* =========================================================
      7. 시작
