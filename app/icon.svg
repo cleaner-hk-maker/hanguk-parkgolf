@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="우리파크 앱 아이콘">
+  <rect width="512" height="512" rx="112" fill="#0f3d2a"/>
+  <!-- 잔디 언덕 -->
+  <path d="M0 372c74-34 128-16 186 6 62 24 118 30 176 6 42-17 88-26 150-10v138H0z" fill="#3d9a66"/>
+  <!-- 홀 -->
+  <ellipse cx="316" cy="442" rx="36" ry="13" fill="#071c13"/>
+  <!-- 깃대 -->
+  <rect x="311" y="120" width="10" height="322" rx="5" fill="#ffffff"/>
+  <!-- 깃발 -->
+  <path d="M321 128h86l-20 30 20 30h-86z" fill="#ffcf5c"/>
+  <!-- 공 -->
+  <circle cx="176" cy="404" r="56" fill="#ffffff"/>
+  <circle cx="176" cy="404" r="56" fill="none" stroke="#dfeae1" stroke-width="3"/>
+  <g fill="#dfeae1">
+    <circle cx="158" cy="384" r="6"/>
+    <circle cx="186" cy="388" r="6"/>
+    <circle cx="148" cy="412" r="6"/>
+    <circle cx="176" cy="418" r="6"/>
+    <circle cx="204" cy="414" r="6"/>
+    <circle cx="162" cy="440" r="6"/>
+    <circle cx="192" cy="442" r="6"/>
+  </g>
+</svg>

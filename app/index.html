@@ -1,0 +1,2595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한국파크 | 화순·광주 파크골프</title>
+<meta name="description" content="화순·광주 파크골프 종합 앱. 한국파크골프교육협회 강습 안내, 스코어 기록, 용품샵, 가까운 파크골프장 정보를 한 곳에서.">
+<meta name="theme-color" content="#0f3d2a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="한국파크">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<!--
+  한국파크 — 화순·광주 파크골프 종합 앱 (단일 파일)
+  - 외부 라이브러리 없이 HTML/CSS/JS만 사용했습니다. 파일을 눌러 열면 바로 실행됩니다.
+  - 확정되지 않은 정보(전화·카카오톡·수강료·주소·대표자·용품샵 정보)는
+    화면에 「준비 중」으로 표시되며, 아래 script 맨 위 CONFIG 값만 채우면 한 번에 바뀝니다.
+-->
+<style>
+  :root{
+    --forest-900:#0b2f20;
+    --forest-800:#0f3d2a;
+    --forest-700:#14603f;
+    --forest-600:#1b6f4a;
+    --forest-500:#2a8a5c;
+    --leaf:#8fd694;
+    --mint:#e7f4ea;
+    --mint-deep:#d8ecdd;
+    --paper:#f4f8f2;
+    --card:#ffffff;
+    --ink:#10241a;
+    --ink-soft:#3c5748;
+    --ink-mute:#6b8175;
+    --line:#dcebdf;
+    --amber:#a9611a;
+    --amber-bg:#fdf3e4;
+    --tab-h:66px;
+    --frame:480px;
+    --radius:20px;
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html{-webkit-text-size-adjust:100%;font-size:18px}
+  body{
+    margin:0;
+    background:#e8efe9;
+    color:var(--ink);
+    font-family:"Apple SD Gothic Neo","Pretendard",-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕","Nanum Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif;
+    font-size:1rem;
+    line-height:1.55;
+    letter-spacing:-0.01em;
+    word-break:keep-all;
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1,h2,h3,p,dl,dd,dt,ul,ol{margin:0}
+  ul,ol{padding:0;list-style:none}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+  a{color:inherit}
+  input{font:inherit}
+  svg{display:block}
+  :focus-visible{outline:3px solid var(--forest-500);outline-offset:2px;border-radius:8px}
+
+  .app{
+    width:min(100%,var(--frame));
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    background:var(--paper);
+    box-shadow:0 0 48px rgba(11,47,32,.14);
+    position:relative;
+    padding-bottom:calc(var(--tab-h) + env(safe-area-inset-bottom));
+  }
+
+  /* ---------- 상단 ---------- */
+  .appbar{
+    position:sticky;top:0;z-index:20;
+    background:linear-gradient(155deg,#176544,#0b2f20 90%);
+    color:#fff;
+  }
+  .appbar-row{display:flex;align-items:center;gap:.7rem;padding:calc(env(safe-area-inset-top) + .7rem) 1.05rem .85rem}
+  .appbar-user{
+    margin-left:auto;flex:none;max-width:11rem;
+    display:inline-flex;align-items:center;gap:.3rem;
+    height:38px;padding:0 .7rem;border-radius:999px;
+    background:rgba(255,255,255,.16);color:#eaf6ee;
+    font-size:.78rem;font-weight:800;letter-spacing:-0.02em;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .appbar-user.on{background:#fff;color:var(--forest-800)}
+  .appbar-user .ucheck{font-size:.9rem;line-height:1}
+  .appbar-status{
+    display:flex;align-items:center;gap:.35rem;
+    padding:.34rem 1.05rem .4rem;
+    font-size:.74rem;font-weight:800;line-height:1.35;
+    background:rgba(0,0,0,.18);color:#d9eddf;
+  }
+  .appbar-status::before{content:"";width:7px;height:7px;border-radius:50%;background:#8fd694;flex:none}
+  .appbar-status.demo{background:rgba(253,243,228,.96);color:#8a5216}
+  .appbar-status.demo::before{background:#d99a3e}
+  .appbar .mark{
+    width:42px;height:42px;flex:none;border-radius:13px;
+    background:rgba(255,255,255,.14);
+    display:grid;place-items:center;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);
+  }
+  .appbar .mark svg{width:26px;height:26px}
+  .appbar h1{font-size:1.22rem;font-weight:800;letter-spacing:-0.03em;line-height:1.2}
+  .appbar p{font-size:.74rem;color:#c8e3d2;line-height:1.3;margin-top:.15rem}
+
+  /* ---------- 화면 ---------- */
+  .view{display:none;padding:1rem 1rem 1.4rem}
+  .view.active{display:block}
+  #view-score.active{padding-bottom:calc(var(--tab-h) + 168px)}
+
+  .page-title{font-size:1.32rem;font-weight:800;letter-spacing:-0.03em}
+  .page-sub{font-size:.86rem;color:var(--ink-mute);margin-top:.25rem}
+
+  .sec{margin-top:1.35rem}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.6rem}
+  .sec-title{
+    display:flex;align-items:center;gap:.45rem;
+    font-size:1.02rem;font-weight:800;letter-spacing:-0.02em;
+  }
+  .sec-title::before{content:"";width:5px;height:17px;border-radius:3px;background:var(--forest-500)}
+  .count{font-size:.76rem;font-weight:700;color:var(--forest-700);background:var(--mint);padding:.1rem .5rem;border-radius:999px}
+  .linkbtn{font-size:.85rem;font-weight:800;color:var(--forest-600);padding:.3rem .2rem}
+
+  /* ---------- 홈 히어로 ---------- */
+  .hero{
+    position:relative;overflow:hidden;
+    border-radius:24px;
+    background:linear-gradient(150deg,#1e7a52 0%,#0f3d2a 72%);
+    color:#fff;padding:1.1rem 1.15rem 1.2rem;
+    box-shadow:0 16px 34px rgba(15,61,42,.24);
+  }
+  .hero-mark{
+    width:48px;height:48px;border-radius:16px;
+    background:rgba(255,255,255,.16);
+    display:grid;place-items:center;margin-bottom:.7rem;
+  }
+  .hero-mark svg{width:29px;height:29px}
+  .hero h2{font-size:1.72rem;font-weight:800;letter-spacing:-0.045em;line-height:1.1}
+  .hero-sub{font-size:.95rem;color:#d6ecdf;margin-top:.45rem;line-height:1.5}
+  .hero-chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.85rem}
+  .hero-chips span{
+    font-size:.76rem;font-weight:700;color:#eaf6ee;
+    background:rgba(255,255,255,.16);border-radius:999px;padding:.3rem .6rem;
+  }
+  .hero-art{position:absolute;right:-26px;bottom:-30px;width:190px;height:190px;opacity:.3;pointer-events:none}
+
+  /* ---------- 빠른 메뉴 ---------- */
+  .quick{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.9rem}
+  .qcard{
+    display:flex;flex-direction:column;align-items:flex-start;gap:.5rem;
+    text-align:left;background:var(--card);
+    border:1px solid var(--line);border-radius:18px;
+    padding:.8rem .8rem .9rem;min-height:112px;
+    box-shadow:0 6px 16px rgba(15,61,42,.06);
+    transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .qcard:active{transform:scale(.975);box-shadow:0 3px 10px rgba(15,61,42,.08)}
+  .qcard .qi{
+    width:42px;height:42px;border-radius:13px;
+    background:var(--mint);color:var(--forest-600);
+    display:grid;place-items:center;
+  }
+  .qcard .qi svg{width:23px;height:23px}
+  .qcard b{font-size:.98rem;font-weight:800;letter-spacing:-0.02em;line-height:1.3}
+  .qcard small{font-size:.76rem;color:var(--ink-mute);line-height:1.4}
+
+  /* ---------- 다음 강습 ---------- */
+  .nextclass{
+    background:linear-gradient(180deg,#ffffff,#f3f9f4);
+    border:1px solid var(--line);border-radius:20px;
+    padding:1rem 1.05rem 1.05rem;
+    box-shadow:0 6px 18px rgba(15,61,42,.06);
+  }
+  .nc-label{font-size:.76rem;font-weight:800;color:var(--forest-600);letter-spacing:.02em}
+  .nc-date{font-size:1.24rem;font-weight:800;letter-spacing:-0.03em;margin-top:.25rem}
+  .nc-meta{font-size:.85rem;color:var(--ink-soft);margin-top:.2rem}
+  .nc-btn{
+    display:inline-flex;align-items:center;gap:.3rem;margin-top:.75rem;
+    height:44px;padding:0 1rem;border-radius:12px;
+    background:var(--forest-600);color:#fff;font-size:.9rem;font-weight:800;
+  }
+  .nc-btn:active{background:var(--forest-700)}
+
+  /* ---------- 카드·정보줄 ---------- */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:1rem;box-shadow:0 6px 18px rgba(15,61,42,.05);
+  }
+  .rows{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:0 6px 18px rgba(15,61,42,.05)}
+  .row{display:flex;gap:.7rem;align-items:flex-start;padding:.78rem .95rem;border-top:1px solid var(--line)}
+  .row:first-child{border-top:0}
+  .row .lb{width:5.4rem;flex:none;font-size:.8rem;font-weight:700;color:var(--ink-mute);padding-top:.18rem}
+  .row .vl{flex:1;min-width:0;font-size:1rem;font-weight:700;line-height:1.45}
+  .pending{
+    display:inline-block;font-size:.85rem;font-weight:700;color:#87968c;
+    background:#f0f3f0;border:1px dashed #ccd8ce;border-radius:999px;padding:.18rem .6rem;
+  }
+  .vlink{color:var(--forest-700);text-decoration:underline;text-underline-offset:3px;font-weight:800}
+
+  /* ---------- 구장 ---------- */
+  .course{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:.95rem 1rem 1rem;margin-top:.65rem;
+    box-shadow:0 6px 16px rgba(15,61,42,.05);
+  }
+  .course h3{font-size:1.05rem;font-weight:800;letter-spacing:-0.02em}
+  .course .tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.35rem}
+  .chip{font-size:.73rem;font-weight:800;color:var(--forest-700);background:var(--mint);border-radius:999px;padding:.15rem .5rem}
+  .chip.gray{background:#eef2ef;color:#5f7367}
+  .course .lines{display:grid;gap:.3rem;margin-top:.6rem;font-size:.87rem;color:var(--ink-soft);line-height:1.45}
+  .course .lines b{color:var(--ink);font-weight:800}
+  .callbtn{
+    display:inline-flex;align-items:center;gap:.35rem;margin-top:.7rem;
+    height:44px;padding:0 .95rem;border-radius:12px;
+    background:var(--mint);color:var(--forest-700);font-size:.9rem;font-weight:800;
+  }
+  .callbtn svg{width:18px;height:18px}
+  .note{
+    font-size:.8rem;color:var(--ink-mute);line-height:1.5;
+    background:#f1f6f2;border-radius:14px;padding:.7rem .85rem;margin-top:.8rem;
+  }
+
+  /* ---------- 스코어: 설정 ---------- */
+  .field{margin-top:.9rem}
+  .field:first-child{margin-top:0}
+  .field > label,.field > .flabel{display:block;font-size:.82rem;font-weight:800;color:var(--ink-mute);margin-bottom:.4rem}
+  .seg{display:flex;gap:.35rem;background:#edf3ee;padding:.28rem;border-radius:14px}
+  .seg button{
+    flex:1;height:48px;border-radius:11px;
+    font-size:1rem;font-weight:800;color:#6d8377;
+    transition:background .12s,color .12s;
+  }
+  .seg button.on{background:#fff;color:var(--forest-700);box-shadow:0 2px 8px rgba(15,61,42,.14)}
+  .seg.small button{height:40px;font-size:.88rem}
+
+  .setup-head{
+    display:flex;align-items:center;gap:.5rem;width:100%;
+    min-height:44px;padding:.1rem 0;margin-bottom:.15rem;
+    color:var(--ink);text-align:left;
+  }
+  .setup-title{font-size:1rem;font-weight:800;letter-spacing:-0.02em}
+  .setup-sum{margin-left:auto;font-size:.8rem;font-weight:800;color:var(--forest-700);background:var(--mint);border-radius:999px;padding:.18rem .55rem}
+  .caret{color:var(--ink-mute);transition:transform .18s ease;flex:none}
+  .setupcard.collapsed .caret{transform:rotate(-90deg)}
+  .setupcard.collapsed #setupBody{display:none}
+
+  .names{display:grid;gap:.45rem}
+  .namefield{display:flex;align-items:center;gap:.5rem}
+  .nfl{
+    width:26px;height:26px;flex:none;border-radius:50%;
+    background:var(--mint-deep);color:var(--forest-700);
+    font-size:.78rem;font-weight:800;display:grid;place-items:center;
+  }
+  .nameinput{
+    width:100%;height:48px;border-radius:12px;
+    border:1px solid var(--line);background:#fbfdfb;
+    padding:0 .8rem;font-size:1rem;color:var(--ink);
+  }
+  .nameinput::placeholder{color:#a8b6ac}
+
+  .ghost{
+    display:inline-flex;align-items:center;justify-content:center;
+    height:46px;padding:0 .95rem;border-radius:12px;
+    border:1px solid var(--line);background:#fff;
+    font-size:.9rem;font-weight:800;color:var(--ink-soft);
+  }
+  .ghost.wide{width:100%;margin-top:1rem}
+  .ghost:active{background:#f0f5f1}
+
+  /* ---------- 스코어: 보드 ---------- */
+  .boardtools{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin:1.1rem 0 .7rem}
+  .boardtools .seg{flex:1;max-width:230px}
+  .autosave{font-size:.74rem;color:var(--ink-mute);font-weight:700}
+
+  .hole{
+    background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:.8rem .85rem .55rem;margin-bottom:.65rem;
+    box-shadow:0 6px 16px rgba(15,61,42,.05);
+  }
+  .hole-head{
+    display:flex;align-items:center;justify-content:space-between;gap:.4rem;
+    padding-bottom:.55rem;border-bottom:1px dashed var(--line);
+  }
+  .hole-no{font-size:1.02rem;font-weight:800;letter-spacing:-0.02em}
+  .par{display:flex;align-items:center;gap:.25rem}
+  .par .plabel{font-size:.72rem;font-weight:800;color:var(--ink-mute);margin-right:.1rem}
+  .par button{
+    width:42px;height:38px;border-radius:10px;
+    background:#eff4f0;color:#68806f;font-size:.95rem;font-weight:800;
+  }
+  .par button.on{background:var(--forest-600);color:#fff}
+
+  .pl{display:flex;align-items:center;gap:.45rem;padding-top:.55rem}
+  .pname{
+    flex:1;min-width:0;font-size:.95rem;font-weight:800;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .step{
+    width:54px;height:54px;flex:none;border-radius:16px;
+    background:#eef4ef;border:1px solid var(--line);
+    color:var(--forest-700);font-size:1.7rem;font-weight:700;line-height:1;
+    display:grid;place-items:center;
+    transition:transform .08s,background .12s;
+  }
+  .step:active{transform:scale(.93)}
+  .step.plus{background:var(--forest-600);border-color:var(--forest-600);color:#fff}
+  .step.plus:active{background:var(--forest-700)}
+  .val{
+    width:58px;flex:none;text-align:center;
+    font-size:1.75rem;font-weight:800;line-height:1.1;
+    font-variant-numeric:tabular-nums;
+  }
+  .val.empty{color:#b7c4ba}
+
+  .focusbar{display:flex;align-items:center;justify-content:space-between;font-size:.84rem;font-weight:800;color:var(--ink-soft);margin-bottom:.35rem}
+  .focuspar{color:var(--ink-mute);font-weight:700}
+  .progress{height:7px;border-radius:99px;background:#e3ece5;overflow:hidden;margin-bottom:.7rem}
+  .progress i{display:block;height:100%;background:var(--forest-500);border-radius:99px;transition:width .2s}
+  .focusnav{display:flex;gap:.5rem;margin-top:.15rem}
+  .focusnav button{
+    flex:1;height:52px;border-radius:14px;
+    background:#fff;border:1px solid var(--line);
+    font-size:1rem;font-weight:800;color:var(--forest-700);
+  }
+  .focusnav button[disabled]{opacity:.4}
+  .focusnav button:active:not([disabled]){background:#f0f5f1}
+
+  .helpbox{
+    margin-top:1.2rem;background:#eef6f0;border:1px solid var(--line);
+    border-radius:18px;padding:.85rem .95rem .9rem;
+    font-size:.84rem;color:var(--ink-soft);line-height:1.6;
+  }
+  .helpbox p + p{margin-top:.3rem}
+  .help-title{font-size:.88rem;font-weight:800;color:var(--forest-700);margin-bottom:.3rem}
+  .helpbox b{font-weight:800;color:var(--forest-700)}
+
+  /* ---------- 기록 ---------- */
+  .record{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:.8rem .9rem;margin-top:.55rem;
+  }
+  .rec-head{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+  .rec-head b{font-size:.92rem;font-weight:800}
+  .rec-time{font-size:.75rem;color:var(--ink-mute);font-weight:700}
+  .rec-del{margin-left:auto;font-size:.78rem;font-weight:800;color:#a4644a;padding:.25rem .4rem}
+  .rec-totals{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem}
+  .empty{font-size:.86rem;color:var(--ink-mute);line-height:1.55;padding:.35rem .2rem}
+
+  /* ---------- 요약 바 ---------- */
+  .summary{
+    position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + .3rem);
+    width:min(100%,var(--frame));
+    padding:0 .6rem;z-index:25;display:none;
+  }
+  .summary.show{display:block}
+  .sumbar{
+    background:rgba(255,255,255,.97);
+    border:1px solid var(--line);border-radius:18px;
+    padding:.6rem .7rem .65rem;
+    box-shadow:0 12px 28px rgba(11,47,32,.18);
+  }
+  .totals{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center}
+  .totchip{
+    font-size:.79rem;font-weight:800;color:var(--forest-700);
+    background:var(--mint);border-radius:999px;padding:.2rem .55rem;
+    white-space:nowrap;
+  }
+  .totchip b{font-size:.92rem}
+  .totchip em{font-style:normal;font-weight:800;margin-left:.1rem}
+  .d-plus{color:var(--amber)}
+  .d-minus{color:var(--forest-700)}
+  .d-even{color:var(--ink-mute)}
+  .totinfo{font-size:.72rem;color:var(--ink-mute);font-weight:700;margin-left:auto}
+  .sumbtns{display:flex;gap:.45rem;margin-top:.5rem}
+  .sumbtns button{flex:1;height:48px;border-radius:13px;font-size:.95rem;font-weight:800}
+  .sumbtns .save{background:var(--forest-600);color:#fff}
+  .sumbtns .save:active{background:var(--forest-700)}
+  .sumbtns .hist{background:#edf3ee;color:var(--forest-700)}
+
+  /* ---------- 용품샵 ---------- */
+  .shopitem{
+    display:flex;gap:.8rem;align-items:flex-start;
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:.85rem .9rem;margin-top:.6rem;
+  }
+  .shopitem .si{
+    width:46px;height:46px;flex:none;border-radius:14px;
+    background:var(--mint);color:var(--forest-600);
+    display:grid;place-items:center;
+  }
+  .shopitem .si svg{width:25px;height:25px}
+  .shopitem h3{font-size:.98rem;font-weight:800;letter-spacing:-0.02em}
+  .shopitem p{font-size:.82rem;color:var(--ink-mute);margin-top:.15rem;line-height:1.4}
+  .shopitem .price{margin-top:.35rem;font-size:.82rem;font-weight:800;color:var(--forest-600)}
+
+  /* ---------- 하단 탭 ---------- */
+  .tabbar{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:0;
+    width:min(100%,var(--frame));
+    height:calc(var(--tab-h) + env(safe-area-inset-bottom));
+    padding-bottom:env(safe-area-inset-bottom);
+    background:#ffffff;
+    border-top:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(4,1fr);
+    z-index:30;
+  }
+  .tab{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.12rem;
+    color:#7d9084;font-size:.72rem;font-weight:800;letter-spacing:-0.02em;
+    padding-top:.2rem;
+  }
+  .tab svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+  .tab.on{color:var(--forest-600)}
+  .tab.on .tabdot{opacity:1}
+  .tabdot{display:block;width:4px;height:4px;border-radius:50%;background:var(--forest-500);opacity:0;margin-top:.1rem}
+
+  /* ---------- 알림 ---------- */
+  .toast{
+    position:fixed;left:50%;transform:translate(-50%,10px);
+    bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 150px);
+    background:#0b2f20;color:#fff;
+    padding:.65rem 1rem;border-radius:12px;
+    font-size:.9rem;font-weight:800;line-height:1.35;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+    z-index:80;max-width:min(92%,420px);text-align:center;
+    box-shadow:0 10px 24px rgba(11,47,32,.3);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .appfoot{margin-top:1.6rem;padding-top:1rem;border-top:1px solid var(--line);text-align:center}
+  .appfoot p{font-size:.8rem;color:var(--ink-mute);line-height:1.6}
+  .appfoot .small{font-size:.74rem}
+  .adminlink{
+    display:inline-flex;align-items:center;gap:.35rem;margin-top:.85rem;
+    height:44px;padding:0 1rem;border-radius:12px;
+    border:1px dashed #b9cdbe;background:#f7fbf8;
+    font-size:.84rem;font-weight:800;color:var(--ink-soft);
+  }
+
+  /* ---------- 회원 ---------- */
+  .badge{
+    display:inline-flex;align-items:center;gap:.22rem;
+    font-size:.72rem;font-weight:800;border-radius:999px;padding:.14rem .48rem;
+    white-space:nowrap;
+  }
+  .badge.ok{background:var(--mint);color:var(--forest-700)}
+  .badge.warn{background:var(--amber-bg);color:var(--amber)}
+  .memberstrip{
+    display:flex;align-items:center;gap:.7rem;
+    margin-top:.8rem;padding:.75rem .85rem;
+    background:#fff;border:1px solid var(--line);border-left:4px solid var(--forest-500);
+    border-radius:16px;box-shadow:0 6px 16px rgba(15,61,42,.05);
+  }
+  .memberstrip.guest{border-left-color:#d99a3e;background:#fffdf8}
+  .ms-av{
+    width:40px;height:40px;flex:none;border-radius:50%;
+    background:var(--mint-deep);color:var(--forest-700);
+    display:grid;place-items:center;font-size:1rem;font-weight:800;
+  }
+  .memberstrip.guest .ms-av{background:var(--amber-bg);color:var(--amber)}
+  .ms-txt{flex:1;min-width:0}
+  .ms-txt b{font-size:.98rem;font-weight:800;letter-spacing:-0.02em}
+  .ms-txt small{display:block;font-size:.76rem;color:var(--ink-mute);line-height:1.45;margin-top:.15rem}
+  .ms-meta{display:flex;align-items:center;flex-wrap:wrap;gap:.3rem}
+  .memberstrip .linkbtn{flex:none}
+
+  /* ---------- 입력·버튼 ---------- */
+  .input{
+    width:100%;height:52px;border-radius:12px;
+    border:1px solid var(--line);background:#fbfdfb;
+    padding:0 .85rem;font-size:1.05rem;color:var(--ink);
+  }
+  .input::placeholder{color:#a8b6ac}
+  .input:focus{border-color:var(--forest-500);background:#fff}
+  select.input{
+    appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236b8175' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right .85rem center;
+    padding-right:2.4rem;
+  }
+  .primary{
+    display:inline-flex;align-items:center;justify-content:center;gap:.35rem;
+    height:54px;padding:0 1.1rem;border-radius:14px;
+    background:var(--forest-600);color:#fff;
+    font-size:1.02rem;font-weight:800;letter-spacing:-0.02em;
+  }
+  .primary:active{background:var(--forest-700)}
+  .primary:disabled{background:#9db5a6}
+  .primary.wide{width:100%;margin-top:1rem}
+  .fieldhelp{font-size:.76rem;color:var(--ink-mute);line-height:1.45;margin-top:.35rem}
+  .formerr{font-size:.84rem;font-weight:800;color:#a5401f;line-height:1.45;margin-top:.6rem}
+
+  /* ---------- 시트(본인확인·관리자) ---------- */
+  .sheet{
+    position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);
+    width:min(100%,var(--frame));z-index:60;
+    background:var(--paper);display:none;flex-direction:column;
+    box-shadow:0 0 60px rgba(11,47,32,.28);
+  }
+  .sheet.open{display:flex}
+  body.sheet-open{overflow:hidden}
+  .sheet-head{
+    flex:none;display:flex;align-items:center;gap:.6rem;
+    padding:calc(env(safe-area-inset-top) + .8rem) 1rem .8rem;
+    background:linear-gradient(155deg,#176544,#0b2f20 90%);color:#fff;
+  }
+  .sheet-head h2{font-size:1.12rem;font-weight:800;letter-spacing:-0.03em}
+  .sheet-head p{font-size:.76rem;color:#c8e3d2;margin-top:.1rem}
+  .sheet-close{
+    margin-left:auto;flex:none;width:44px;height:44px;border-radius:50%;
+    display:grid;place-items:center;background:rgba(255,255,255,.16);color:#fff;
+    font-size:1.1rem;font-weight:800;
+  }
+  .sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:1rem 1rem calc(1.6rem + env(safe-area-inset-bottom))}
+  .sheet-lead{font-size:.92rem;color:var(--ink-soft);line-height:1.6}
+  .sheet-lead b{color:var(--forest-700);font-weight:800}
+  .gate-current{
+    display:flex;align-items:center;gap:.6rem;
+    background:#eef6f0;border:1px solid var(--line);border-radius:16px;
+    padding:.7rem .85rem;margin-bottom:1rem;
+  }
+  .gate-current .ms-txt{flex:1;min-width:0}
+  .gate-box{background:#fff;border:1px solid var(--line);border-radius:20px;padding:1.05rem;box-shadow:0 8px 22px rgba(15,61,42,.06);margin-top:1rem}
+  .demo-card{background:var(--amber-bg);border:1px solid #f0d9b6;border-radius:16px;padding:.8rem .9rem;margin-top:1rem}
+  .demo-card b{font-size:.84rem;font-weight:800;color:var(--amber);display:block}
+  .demo-card p{font-size:.82rem;color:#7a5622;line-height:1.5;margin-top:.25rem}
+  .demo-card code{font-family:inherit;font-weight:800;background:#fff;border-radius:6px;padding:.05rem .3rem}
+
+  /* ---------- 관리자 ---------- */
+  .adminsegs{margin-bottom:1rem}
+  .admin-sec-title{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin:1.2rem 0 .55rem;font-size:.95rem;font-weight:800}
+  .admin-sec-title:first-child{margin-top:0}
+  .adminlist{display:grid;gap:.5rem}
+  .mrow{
+    display:flex;align-items:center;gap:.6rem;
+    background:#fff;border:1px solid var(--line);border-radius:14px;padding:.65rem .8rem;
+  }
+  .mrow .ms-av{width:34px;height:34px;font-size:.88rem}
+  .mrow .mline{flex:1;min-width:0}
+  .mrow b{font-size:.92rem;font-weight:800;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mrow small{font-size:.75rem;color:var(--ink-mute);display:block;line-height:1.4}
+  .mrow .del{flex:none;font-size:.78rem;font-weight:800;color:#a4644a;padding:.4rem .3rem}
+  .adm-rounds{display:grid;gap:.5rem}
+  .arow{background:#fff;border:1px solid var(--line);border-radius:14px;padding:.7rem .85rem}
+  .arow .ahead{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+  .arow .ahead b{font-size:.88rem;font-weight:800}
+  .arow .ahead .rec-time{margin-left:auto}
+  .arow .atotals{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem}
+  .csvbtn{display:inline-flex;align-items:center;gap:.35rem;height:44px;padding:0 .9rem;border-radius:12px;background:var(--mint);color:var(--forest-700);font-size:.88rem;font-weight:800}
+  .serverrounds{display:grid;gap:.5rem}
+  .busy{opacity:.6;pointer-events:none}
+
+  @media (min-width:520px){
+    body{background:#e2ebe4}
+    .app{box-shadow:0 0 0 1px rgba(15,61,42,.06),0 24px 60px rgba(11,47,32,.16)}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="appbar">
+   <div class="appbar-row">
+    <span class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 21V3.5"/><path d="M8 4.6 18.4 7.6 8 10.6" fill="#fff" stroke="none"/><circle cx="15.6" cy="17.8" r="2.3" fill="#fff" stroke="none"/>
+      </svg>
+    </span>
+    <div>
+      <h1>한국파크</h1>
+      <p>화순 · 광주 파크골프</p>
+    </div>
+    <button type="button" class="appbar-user" id="memberChip" data-act="openGate">본인확인</button>
+   </div>
+   <p class="appbar-status demo" id="netBanner">데모 모드(서버 연결 전) · 기록은 이 휴대폰에만 저장됩니다</p>
+  </header>
+
+  <main>
+    <!-- ================= 홈 ================= -->
+    <section id="view-home" class="view active">
+      <div class="hero">
+        <div class="hero-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 21V3.5"/><path d="M8 4.6 18.4 7.6 8 10.6" fill="#fff" stroke="none"/><circle cx="15.6" cy="17.8" r="2.3" fill="#fff" stroke="none"/>
+            <circle cx="15.5" cy="18" r="2.4" fill="#fff" stroke="none"/>
+          </svg>
+        </div>
+        <h2>한국파크</h2>
+        <p class="hero-sub">화순·광주 파크골프, 강습부터 스코어 기록까지 한 곳에서</p>
+        <div class="hero-chips">
+          <span>매주 목·토 오후 3시</span>
+          <span>화순 명품점 2층</span>
+        </div>
+        <svg class="hero-art" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+          <circle cx="150" cy="60" r="54" fill="#8fd694" opacity=".5"/>
+          <path d="M0 150c40-22 68-6 104 6s58 6 96-10v54H0z" fill="#8fd694" opacity=".55"/>
+          <path d="M132 40v96" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+          <path d="M136 44h34l-8 12 8 12h-34z" fill="#fff" opacity=".85"/>
+          <circle cx="86" cy="140" r="16" fill="#fff" opacity=".9"/>
+        </svg>
+      </div>
+
+      <section class="sec">
+        <div class="sec-title">다음 강습</div>
+        <div class="nextclass">
+          <p class="nc-label">한국파크골프교육협회</p>
+          <p class="nc-date" id="nextClassDate">매주 목·토 오후 3시</p>
+          <p class="nc-meta">화순 명품점 2층 · 어르신·일반인 모두</p>
+          <button class="nc-btn" data-goto="class">강습 안내 보기
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </section>
+
+
+      <div class="quick">
+        <button class="qcard" data-goto="score">
+          <span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21V3.5"/><path d="M7 4.6 17 7.6 7 10.6"/><circle cx="14.6" cy="17.8" r="2.2"/></svg></span>
+          <b>스코어 기록 시작</b>
+          <small>9홀·18홀 타수 기록</small>
+        </button>
+        <button class="qcard" data-goto="class" data-anchor="class-info">
+          <span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M8.5 14.5h3"/></svg></span>
+          <b>목·토 강습 안내</b>
+          <small>매주 목·토 오후 3시, 화순 명품점</small>
+        </button>
+        <button class="qcard" data-goto="shop">
+          <span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 8h13l1 12.5h-15L5.5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span>
+          <b>용품 둘러보기</b>
+          <small>채·공·장갑·세트 상품</small>
+        </button>
+        <button class="qcard" data-goto="class" data-anchor="courses">
+          <span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg></span>
+          <b>주변 구장</b>
+          <small>화순·광주 5곳</small>
+        </button>
+      </div>
+
+      <section class="sec" id="recentSec" hidden>
+        <div class="sec-title">내 최근 스코어</div>
+        <div class="card" id="recentCard"></div>
+      </section>
+
+      <footer class="appfoot">
+        <p>한국파크 · 한국파크골프교육협회</p>
+        <p class="small">화순 명품점 2층 · 매주 목요일·토요일 오후 3시</p>
+        <button type="button" class="adminlink" data-act="openAdmin">협회 관리자 모드</button>
+      </footer>
+    </section>
+
+    <!-- ================= 스코어 ================= -->
+    <section id="view-score" class="view">
+      <h2 class="page-title">스코어 기록</h2>
+      <p class="page-sub">타수를 넣으면 합계와 Par 대비가 바로 계산됩니다.</p>
+
+      <div class="memberstrip guest" id="memberStrip"></div>
+
+      <div class="card setupcard" id="setupCard" style="margin-top:.8rem">
+        <button type="button" class="setup-head" data-act="toggleSetup" id="setupToggle" aria-expanded="true" aria-controls="setupBody">
+          <span class="setup-title">라운드 설정</span>
+          <span class="setup-sum" id="setupSum">9홀 · 2명</span>
+          <svg class="caret" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div id="setupBody">
+        <div class="field">
+          <span class="flabel">홀 수</span>
+          <div class="seg" id="holeSeg">
+            <button type="button" data-holes="9">9홀</button>
+            <button type="button" data-holes="18">18홀</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="flabel">함께 치는 사람</span>
+          <div class="seg" id="countSeg">
+            <button type="button" data-count="1">1명</button>
+            <button type="button" data-count="2">2명</button>
+            <button type="button" data-count="3">3명</button>
+            <button type="button" data-count="4">4명</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="flabel">이름 (비워 두면 1번·2번으로 표시)</span>
+          <div class="names" id="names"></div>
+        </div>
+        <div class="field">
+          <span class="flabel">구장</span>
+          <select class="input" id="courseSel"></select>
+          <input class="input" id="courseEtc" type="text" maxlength="24" placeholder="구장 이름을 적어 주세요" style="margin-top:.45rem" hidden>
+        </div>
+        <button type="button" class="ghost wide" data-act="resetRound">새 라운드 시작 (타수 지우기)</button>
+        </div>
+      </div>
+
+      <div class="boardtools">
+        <div class="seg small" id="modeSeg">
+          <button type="button" data-mode="focus">한 홀씩</button>
+          <button type="button" data-mode="all">전체 보기</button>
+        </div>
+        <span class="autosave">입력하면 자동 저장</span>
+      </div>
+
+      <div id="board"></div>
+
+      <section class="helpbox">
+        <p class="help-title">이렇게 써 보세요</p>
+        <p>· 타수는 <b>−</b> <b>+</b> 버튼으로 넣고, <b>Par</b> 숫자(3·4·5)를 누르면 그 홀의 Par가 바뀝니다.</p>
+        <p>· 입력한 내용은 이 휴대폰에 자동으로 저장됩니다. 앱을 닫았다 열어도 그대로 남아 있어요.</p>
+      </section>
+
+      <section class="sec" id="records">
+        <div class="sec-head">
+          <h2 class="sec-title">지난 기록 <span class="count" id="recordCount">0</span></h2>
+          <button type="button" class="linkbtn" data-act="toggleRecords" id="recToggle" aria-expanded="false" aria-controls="recordsBody">보기</button>
+        </div>
+        <div id="recordsBody" hidden>
+          <div id="recordList"></div>
+        </div>
+      </section>
+
+      <section class="sec" id="serverSec" hidden>
+        <div class="sec-head">
+          <h2 class="sec-title">협회에 저장된 내 기록</h2>
+          <button type="button" class="linkbtn" data-act="loadMyRounds">새로고침</button>
+        </div>
+        <div class="serverrounds" id="serverRounds"></div>
+      </section>
+    </section>
+
+    <!-- ================= 강습·구장 ================= -->
+    <section id="view-class" class="view">
+      <h2 class="page-title">강습 · 구장</h2>
+      <p class="page-sub">한국파크골프교육협회 강습 안내와 화순·광주 파크골프장입니다.</p>
+
+      <section class="sec" id="class-info">
+        <div class="sec-title">강습 안내</div>
+        <dl class="rows" id="classRows" style="margin-top:.6rem"></dl>
+        <p class="note" id="classNote"></p>
+      </section>
+
+      <section class="sec" id="courses">
+        <div class="sec-title">화순 · 광주 파크골프장</div>
+        <div id="courseList"></div>
+        <p class="note">2026년 11월에 확인한 정보입니다. 요금과 운영 시간은 사정에 따라 바뀔 수 있으니 방문 전에 구장으로 전화해 확인하시는 것이 좋습니다.</p>
+      </section>
+    </section>
+
+    <!-- ================= 용품샵 ================= -->
+    <section id="view-shop" class="view">
+      <h2 class="page-title">용품샵</h2>
+      <p class="page-sub">화순 파크골프 용품샵 안내입니다.</p>
+
+      <section class="sec" style="margin-top:.9rem">
+        <div class="sec-title">매장 안내</div>
+        <dl class="rows" id="shopRows" style="margin-top:.6rem"></dl>
+      </section>
+
+      <section class="sec">
+        <div class="sec-title">취급 품목</div>
+        <div id="shopItems"></div>
+        <p class="note" id="shopNote"></p>
+      </section>
+    </section>
+  </main>
+
+  <!-- ================= 회원 본인확인 ================= -->
+  <div class="sheet" id="gateSheet" role="dialog" aria-modal="true" aria-labelledby="gateTitle" aria-hidden="true">
+    <div class="sheet-head">
+      <div>
+        <h2 id="gateTitle">회원 본인확인</h2>
+        <p>한국파크골프교육협회 회원 전용 점수 기록</p>
+      </div>
+      <button type="button" class="sheet-close" data-act="closeGate" aria-label="닫기">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="gate-current" id="gateCurrent" hidden>
+        <span class="ms-av" id="gateCurrentAv">회</span>
+        <span class="ms-txt">
+          <span class="ms-meta"><b id="gateCurrentName">–</b><span class="badge ok">인증됨</span></span>
+          <small id="gateCurrentSub"></small>
+        </span>
+        <button type="button" class="linkbtn" data-act="unlinkMember">해제</button>
+      </div>
+
+      <p class="sheet-lead">협회에 등록된 <b>이름</b>과 <b>휴대폰 번호 뒷4자리</b>를 넣으면 본인확인이 됩니다. 한 번 확인하면 이 휴대폰에서는 다음부터 바로 열립니다.</p>
+
+      <div class="gate-box">
+        <div class="field">
+          <label for="gateName">이름</label>
+          <input class="input" id="gateName" type="text" maxlength="20" placeholder="예: 주세미" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="gatePhone">휴대폰 번호 뒷4자리</label>
+          <input class="input" id="gatePhone" type="tel" inputmode="numeric" maxlength="4" placeholder="예: 6695" autocomplete="off">
+        </div>
+        <p class="formerr" id="gateErr" hidden></p>
+        <button type="button" class="primary wide" data-act="verifyMember" id="gateBtn">본인확인</button>
+        <p class="fieldhelp">등록된 번호가 기억나지 않으면 협회(강습장)로 문의해 주세요.</p>
+      </div>
+
+      <button type="button" class="ghost wide" id="gateSkip" data-act="skipGate" hidden>본인확인 없이 이 휴대폰에만 기록하기</button>
+
+      <div class="demo-card" id="gateDemo" hidden>
+        <b>데모 모드(서버 연결 전)</b>
+        <p>지금은 서버에 연결되기 전이라 이 휴대폰 안에서만 확인합니다.<br>시험용 명단: <code>주세미 / 6695</code> · <code>테스트회원 / 0000</code></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 협회 관리자 ================= -->
+  <div class="sheet" id="adminSheet" role="dialog" aria-modal="true" aria-labelledby="adminTitle" aria-hidden="true">
+    <div class="sheet-head">
+      <div>
+        <h2 id="adminTitle">협회 관리자</h2>
+        <p>회원 등록 · 전체 점수 기록 관리</p>
+      </div>
+      <button type="button" class="sheet-close" data-act="closeAdmin" aria-label="닫기">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div id="adminLock">
+        <p class="sheet-lead">관리자 비밀번호를 넣어 주세요.</p>
+        <div class="gate-box">
+          <div class="field">
+            <label for="adminPinInput">관리자 비밀번호</label>
+            <input class="input" id="adminPinInput" type="tel" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+          </div>
+          <p class="formerr" id="adminErr" hidden></p>
+          <button type="button" class="primary wide" data-act="adminUnlock" id="adminUnlockBtn">들어가기</button>
+        </div>
+        <div class="demo-card" id="adminDemo" hidden>
+          <b>데모 모드(서버 연결 전)</b>
+          <p>처음 비밀번호는 <code>1234</code>입니다. <code>index.html</code>의 <code>CONFIG.adminPin</code>에서 바꿀 수 있어요.</p>
+        </div>
+      </div>
+
+      <div id="adminMain" hidden>
+        <div class="seg adminsegs" id="adminSeg">
+          <button type="button" data-admin="members" class="on">회원 관리</button>
+          <button type="button" data-admin="rounds">점수 기록</button>
+        </div>
+
+        <div id="adminMembers">
+          <div class="admin-sec-title">신규 회원 등록</div>
+          <div class="card">
+            <div class="field"><label for="mName">이름</label><input class="input" id="mName" maxlength="20" placeholder="예: 김화순"></div>
+            <div class="field"><label for="mPhone">휴대폰 뒷4자리</label><input class="input" id="mPhone" type="tel" inputmode="numeric" maxlength="4" placeholder="예: 1234"></div>
+            <div class="field"><label for="mOrg">소속·메모 (선택)</label><input class="input" id="mOrg" maxlength="40" placeholder="예: 화순 강습반"></div>
+            <p class="formerr" id="mErr" hidden></p>
+            <button type="button" class="primary wide" data-act="adminAddMember" id="mAddBtn">회원으로 등록</button>
+          </div>
+          <div class="admin-sec-title">
+            <span>등록된 회원 <span class="count" id="memberCount">0</span></span>
+            <button type="button" class="linkbtn" data-act="adminRefresh">새로고침</button>
+          </div>
+          <div class="adminlist" id="adminMemberList"></div>
+        </div>
+
+        <div id="adminRounds" hidden>
+          <div class="admin-sec-title">
+            <span>전체 점수 기록 <span class="count" id="allCount">0</span></span>
+            <button type="button" class="csvbtn" data-act="downloadCSV">CSV로 내려받기</button>
+          </div>
+          <div class="adm-rounds" id="adminRoundList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="summary" id="summary">
+    <div class="sumbar">
+      <div class="totals" id="totals" aria-live="polite"></div>
+      <div class="sumbtns">
+        <button type="button" class="save" data-act="save">라운드 저장하기</button>
+        <button type="button" class="hist" data-act="openRecords">지난 기록 보기</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="tabbar" aria-label="주요 메뉴">
+    <button type="button" class="tab on" data-goto="home" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.6 12 4l8 6.6V20a1 1 0 0 1-1 1h-4.5v-5.5h-5V21H5a1 1 0 0 1-1-1z"/></svg>
+      <span>홈</span><span class="tabdot"></span>
+    </button>
+    <button type="button" class="tab" data-goto="score">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21V3.5"/><path d="M7 4.6 17 7.6 7 10.6"/><circle cx="14.6" cy="17.8" r="2.2"/></svg>
+      <span>스코어</span><span class="tabdot"></span>
+    </button>
+    <button type="button" class="tab" data-goto="class">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.4"/><path d="M5 20c1.3-3.6 3.9-5.4 7-5.4s5.7 1.8 7 5.4"/></svg>
+      <span>강습·구장</span><span class="tabdot"></span>
+    </button>
+    <button type="button" class="tab" data-goto="shop">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 8h13l1 12.5h-15L5.5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+      <span>용품샵</span><span class="tabdot"></span>
+    </button>
+  </nav>
+</div>
+
+<noscript>
+  <p style="padding:1rem;text-align:center">스코어 기록 기능을 쓰려면 브라우저의 자바스크립트를 켜 주세요.</p>
+</noscript>
+
+<script>
+(function(){
+  'use strict';
+
+  /* =========================================================
+     1. CONFIG — 확정된 정보가 생기면 여기만 고치면 됩니다.
+        「준비 중」이라고 적힌 값은 화면에도 그대로 「준비 중」으로 나옵니다.
+        예) phone: "061-000-0000"   → 전화를 누르면 바로 연결
+            kakao: "https://pf.kakao.com/_xxxxx" → 카카오톡 채널 열기
+     ========================================================= */
+  const CONFIG = {
+    // ---- 강습 ----
+    className:  '한국파크골프교육협회',
+    classDays:  '매주 목요일 · 토요일',
+    classTime:  '오후 3시',
+    classPlace: '화순 명품점 2층',
+    classTarget:'어르신 · 일반인 모두',
+    classFee:   '준비 중',              // 예: '월 30,000원'
+    phone:      '준비 중',              // 예: '061-000-0000'
+    kakao:      '준비 중',              // 예: 'https://pf.kakao.com/_xxxxx'
+    ceo:        '준비 중',              // 대표자명
+    address:    '준비 중',              // 도로명 주소
+
+    // ---- 용품샵 ----
+    shopName:    '준비 중',
+    shopPhone:   '준비 중',
+    shopAddress: '준비 중',
+    shopHours:   '준비 중',             // 예: '평일 10:00 ~ 19:00'
+    shopIntro:   '화순 파크골프 용품샵에서 채·공·장갑·세트 상품을 만나보세요.',
+
+    // ---- 취급 품목 (이름·설명·가격을 자유롭게 바꾸세요) ----
+    shopItems: [
+      { name:'파크골프채',          desc:'드라이버 · 아이언 · 퍼터, 초보자용부터', price:'가격 문의', icon:'club' },
+      { name:'파크골프공',          desc:'공인구 · 연습용 공, 낱개와 묶음',        price:'가격 문의', icon:'ball' },
+      { name:'장갑 · 파우치 · 모자', desc:'손에 맞는 장갑과 라운드 소품',           price:'가격 문의', icon:'glove' },
+      { name:'세트 상품',           desc:'채 · 공 · 가방까지 한 번에',             price:'가격 문의', icon:'set' }
+    ],
+
+    /* ---- 화순·광주 파크골프장 (2026년 11월 확인) ----
+       전화번호가 없으면 전화 버튼이 나오지 않습니다. */
+    courses: [
+      {
+        name:'화순파크골프장',
+        area:'화순 청풍면', holes:'87홀',
+        address:'전남 화순군 청풍면 풍암리 93-9 일원',
+        hours:'오전 8시~낮 12시 / 오후 1시~6시 (11~3월)',
+        fee:'화순 군민 2,500원 · 관외 8,000원 (1회)',
+        closed:'매주 화요일',
+        phone:'061-375-8947'
+      },
+      {
+        name:'승촌파크골프장',
+        area:'광주 남구 승촌동', holes:'36홀',
+        address:'광주 남구 승촌동 588-47 (승촌공원 안)',
+        hours:'오전 7시~11시 30분 / 오후 1시~6시 (11월 기준)',
+        fee:'2,000원 · 남구 주민 1,000원',
+        closed:'매주 월요일',
+        phone:'062-655-0283'
+      },
+      {
+        name:'동구무등산파크골프장',
+        area:'광주 동구 소태동', holes:'9홀',
+        address:'광주 동구 소태동 산 251-8 일원',
+        hours:'오전 7시~오후 5시 (동절기) / 오전 6시~오후 6시 (하절기)',
+        fee:'2,000원',
+        closed:'매주 월요일',
+        phone:'062-608-2121'
+      },
+      {
+        name:'북구파크골프장',
+        area:'광주 북구 연제동', holes:'36홀',
+        address:'광주 북구 연제동 730 (북구종합운동장 안)',
+        hours:'오전 8시~오후 5시 (11~12월)',
+        fee:'2,000원',
+        closed:'매주 월요일',
+        phone:'062-710-0775'
+      },
+      {
+        name:'광산구 서봉파크골프장',
+        area:'광주 광산구 서봉동', holes:'36홀',
+        address:'광주 광산구 황룡강3자전거길 77 일원',
+        hours:'화~일 오전 8시~오후 5시 (동절기 기준)',
+        fee:'광주시민 2,000원 · 시외 4,000원',
+        closed:'매주 월요일',
+        phone:''
+      }
+    ],
+
+    /* ---- 회원 · 서버 연결 (QR 2번: 회원 전용 점수 기록) ----
+       apiType
+         'demo'     : 서버 없이 이 휴대폰에서만 (지금 상태, 화면에 데모 모드 안내)
+         'gas'      : 구글 스프레드시트(Apps Script) → backend/google_apps_script.gs
+         'supabase' : Supabase → backend/supabase_schema.sql
+       apiUrl
+         gas      : 배포된 웹앱 주소 (https://script.google.com/macros/s/.../exec)
+         supabase : 프로젝트 주소 (https://xxxx.supabase.co)
+       supabaseKey : supabase anon(publishable) 키 — service_role 키는 절대 넣지 마세요. */
+    apiType: 'demo',
+    apiUrl: '',
+    supabaseKey: '',
+    adminPin: '1234',              // 협회 관리자 비밀번호 (서버 연결 시 서버 쪽 PIN과 같게)
+
+    /* 서버 연결 전 시험용 회원 명단 (데모 모드에서만 사용) */
+    demoMembers: [
+      { name:'주세미',   phone4:'6695', org:'한국파크골프교육협회' },
+      { name:'테스트회원', phone4:'0000', org:'시험용' }
+    ],
+
+    pendingText: '준비 중'
+  };
+
+  /* =========================================================
+     2. 저장소 (localStorage) — 자동 저장
+     ========================================================= */
+  const KEY = 'hangukpark.v1';
+  const OLD_KEY = 'wooripark.v1';   // 앱 이름을 「한국파크」로 바꾸기 전 저장본 (처음 한 번 옮겨 옵니다)
+  const HOLES_MAX = 18;
+  const DEFAULT_PARS = [4,3,4,3,5,4,3,4,4, 4,3,5,4,3,4,5,3,4];
+  const DAY_NAME = ['일','월','화','수','목','금','토'];
+  const CLASS_DAYS = [4,6];       // 목(4), 토(6)
+  const CLASS_HOUR = 15;          // 오후 3시
+
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.prototype.slice.call((root || document).querySelectorAll(sel));
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const isPending = v => !v || /준비\s*중/.test(String(v));
+
+  function blankStrokes(){
+    const a = [];
+    for (let i = 0; i < HOLES_MAX; i++) a.push(null);
+    return a;
+  }
+
+  function newRound(holes, count, prevNames){
+    return {
+      id: 'r' + Date.now() + Math.random().toString(36).slice(2, 6),
+      holes: holes || 9,
+      playerCount: count || 2,
+      course: '',
+      pars: DEFAULT_PARS.slice(),
+      players: [0,1,2,3].map(i => ({
+        name: (prevNames && prevNames[i]) || '',
+        strokes: blankStrokes()
+      })),
+      view: 'focus',
+      focusHole: 0
+    };
+  }
+
+  let state = { round: newRound(9, 2), records: [], member: null, members: [], gateSkipped: false };
+  let setupOpen = true;
+
+  function normalizeMember(m){
+    if (!m || !m.name) return null;
+    return {
+      id: String(m.id || ('m' + Date.now().toString(36))),
+      name: String(m.name).slice(0, 20),
+      phone4: String(m.phone4 == null ? '' : m.phone4).slice(0, 4),
+      org: String(m.org || '').slice(0, 40)
+    };
+  }
+
+  function normalizeRound(r){
+    const round = newRound(r.holes, r.playerCount);
+    round.id = r.id || round.id;
+    round.course = typeof r.course === 'string' ? r.course.slice(0, 24) : '';
+    round.view = r.view === 'all' ? 'all' : 'focus';
+    round.focusHole = Math.min(Math.max(0, Number(r.focusHole) || 0), round.holes - 1);
+    if (Array.isArray(r.pars)) {
+      for (let i = 0; i < HOLES_MAX; i++) {
+        const v = Number(r.pars[i]);
+        if (v === 3 || v === 4 || v === 5) round.pars[i] = v;
+      }
+    }
+    if (Array.isArray(r.players)) {
+      for (let i = 0; i < 4; i++) {
+        const src = r.players[i];
+        if (!src) continue;
+        round.players[i].name = typeof src.name === 'string' ? src.name.slice(0, 12) : '';
+        if (Array.isArray(src.strokes)) {
+          for (let h = 0; h < HOLES_MAX; h++) {
+            const v = Number(src.strokes[h]);
+            round.players[i].strokes[h] = (v > 0 && v <= 20) ? Math.round(v) : null;
+          }
+        }
+      }
+    }
+    return round;
+  }
+
+  let canStore = true;
+  function load(){
+    try {
+      let raw = localStorage.getItem(KEY);
+      if (!raw) {
+        raw = localStorage.getItem(OLD_KEY);
+        if (raw) localStorage.setItem(KEY, raw);
+      }
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data && data.round) state.round = normalizeRound(data.round);
+      if (data && Array.isArray(data.records)) {
+        state.records = data.records.filter(r => r && Array.isArray(r.players)).map(r => ({
+          id: String(r.id || ('rec' + Math.random().toString(36).slice(2, 8))),
+          savedAt: Number(r.savedAt) || Date.now(),
+          holes: Number(r.holes) === 18 ? 18 : 9,
+          course: typeof r.course === 'string' ? r.course.slice(0, 24) : '',
+          pars: Array.isArray(r.pars) ? r.pars.slice(0, HOLES_MAX) : DEFAULT_PARS.slice(),
+          players: r.players.map(p => ({
+            name: typeof p.name === 'string' ? p.name : '',
+            strokes: Array.isArray(p.strokes) ? p.strokes.slice(0, HOLES_MAX) : []
+          }))
+        }));
+      }
+      if (data && data.member) state.member = normalizeMember(data.member);
+      if (data && Array.isArray(data.members)) {
+        state.members = data.members.map(normalizeMember).filter(Boolean);
+      }
+      if (data && data.gateSkipped) state.gateSkipped = true;
+    } catch (e) {
+      canStore = false;
+    }
+  }
+  function persist(){
+    if (!canStore) return;
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        round: state.round,
+        records: state.records,
+        member: state.member,
+        members: state.members,
+        gateSkipped: state.gateSkipped
+      }));
+    } catch (e) {
+      canStore = false;
+    }
+  }
+
+  /* =========================================================
+     2-B. 서버 연결 (데모 / 구글 스프레드시트 / Supabase)
+          CONFIG.apiType 만 바꾸면 됩니다.
+     ========================================================= */
+  function serverMode(){
+    if (CONFIG.apiType !== 'gas' && CONFIG.apiType !== 'supabase') return 'demo';
+    if (!String(CONFIG.apiUrl || '').trim()) return 'demo';
+    if (CONFIG.apiType === 'supabase' && !String(CONFIG.supabaseKey || '').trim()) return 'demo';
+    return CONFIG.apiType;
+  }
+
+  const SERVER = {
+    get mode(){ return serverMode(); },
+    get on(){ return serverMode() !== 'demo'; },
+    get url(){ return String(CONFIG.apiUrl || '').trim().replace(/\/+$/, ''); }
+  };
+
+  const RPC_NAMES = {
+    verifyMember: 'verify_member',
+    saveRound: 'save_round',
+    myRounds: 'my_rounds',
+    adminListMembers: 'admin_list_members',
+    adminAddMember: 'admin_add_member',
+    adminDeleteMember: 'admin_delete_member',
+    adminAllRounds: 'admin_all_rounds'
+  };
+
+  function sbParams(action, d){
+    d = d || {};
+    switch (action) {
+      case 'verifyMember': return { p_name: d.name, p_phone4: d.phone4 };
+      case 'saveRound': return { p_member_id: d.memberId, p_round: d.round };
+      case 'myRounds': return { p_member_id: d.memberId };
+      case 'adminListMembers': return { p_pin: d.pin };
+      case 'adminAddMember': return { p_pin: d.pin, p_name: d.name, p_phone4: d.phone4, p_org: d.org || '', p_note: d.note || '' };
+      case 'adminDeleteMember': return { p_pin: d.pin, p_member_id: d.memberId };
+      case 'adminAllRounds': return { p_pin: d.pin };
+      default: return d;
+    }
+  }
+
+  function normalizeApiResponse(body){
+    let data = body;
+    if (typeof data === 'string') {
+      const t = data.replace(/^\uFEFF/, '').trim();
+      if (!t) throw new Error('서버가 빈 응답을 보냈습니다. 배포 상태를 확인해 주세요.');
+      try { data = JSON.parse(t); } catch (e) { throw new Error('서버 응답을 읽을 수 없습니다.'); }
+    }
+    if (Array.isArray(data) && data.length === 1 && data[0] && typeof data[0] === 'object') data = data[0];
+    if (Array.isArray(data)) return { ok: true, rounds: data };
+    if (data && typeof data === 'object') return data;
+    return { ok: true };
+  }
+
+  /* 구글 Apps Script는 text/plain POST를 받고, 브라우저가 막으면 GET으로 한 번 더 시도합니다.
+     (서버 저장은 라운드 id 기준으로 덮어쓰기 때문에 두 번 가도 중복되지 않습니다.) */
+  function gasRequest(payload){
+    const send = function(useGet){
+      const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timer = ctl ? setTimeout(function(){ ctl.abort(); }, 12000) : null;
+      const url = SERVER.url;
+      const target = useGet
+        ? url + (url.indexOf('?') >= 0 ? '&' : '?') + 'payload=' + encodeURIComponent(JSON.stringify(payload))
+        : url;
+      const opt = useGet
+        ? { method: 'GET', redirect: 'follow', signal: ctl ? ctl.signal : undefined }
+        : {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload),
+            redirect: 'follow',
+            signal: ctl ? ctl.signal : undefined
+          };
+      return fetch(target, opt).then(function(res){
+        if (!res.ok) throw new Error('서버 응답 오류 (' + res.status + ')');
+        return res.text();
+      }).then(function(text){
+        if (timer) clearTimeout(timer);
+        return text;
+      }, function(err){
+        if (timer) clearTimeout(timer);
+        throw err;
+      });
+    };
+    return send(false).catch(function(){ return send(true); });
+  }
+
+  async function fetchTimed(url, opt, ms){
+    const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = ctl ? setTimeout(function(){ ctl.abort(); }, ms || 12000) : null;
+    try {
+      return await fetch(url, Object.assign({}, opt, ctl ? { signal: ctl.signal } : {}));
+    } catch (e) {
+      if (e && (e.name === 'AbortError' || e.name === 'TypeError')) {
+        throw new Error('서버에 연결하지 못했습니다. 인터넷 연결과 서버 주소를 확인해 주세요.');
+      }
+      throw e;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  async function apiRequest(action, data){
+    const mode = SERVER.mode;
+    if (mode === 'demo') throw new Error('데모 모드에서는 서버를 쓰지 않습니다.');
+    let body;
+    if (mode === 'gas') {
+      try {
+        body = await gasRequest(Object.assign({ action: action }, data || {}));
+      } catch (e) {
+        if (e && e.name === 'TypeError') throw new Error('서버에 연결하지 못했습니다. 인터넷 연결과 서버 주소를 확인해 주세요.');
+        throw e;
+      }
+    } else {
+      const fn = RPC_NAMES[action];
+      if (!fn) throw new Error('서버에서 지원하지 않는 기능입니다.');
+      const res = await fetchTimed(SERVER.url + '/rest/v1/rpc/' + fn, {
+        method: 'POST',
+        headers: {
+          'apikey': CONFIG.supabaseKey,
+          'Authorization': 'Bearer ' + CONFIG.supabaseKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(sbParams(action, data))
+      });
+      const text = await res.text();
+      if (!res.ok) {
+        let msg = '서버 오류 (' + res.status + ')';
+        try {
+          const j = JSON.parse(text);
+          if (j && (j.message || j.hint || j.details)) msg = j.message || j.hint || j.details;
+        } catch (e) {}
+        throw new Error(msg);
+      }
+      body = text;
+    }
+    const out = normalizeApiResponse(body);
+    if (out && out.ok === false) throw new Error(out.error || '요청을 처리하지 못했습니다.');
+    return out;
+  }
+
+  /* ---- 회원 (데모 명단) ---- */
+  const normName = v => String(v == null ? '' : v).replace(/\s+/g, '').toLowerCase();
+  const demoId = (name, phone4) => 'd-' + normName(name) + '-' + phone4;
+
+  function seedDemoMembers(){
+    if (state.members && state.members.length) return;
+    state.members = (CONFIG.demoMembers || []).map(function(m, i){
+      return normalizeMember({ id: 'demo-' + (i + 1), name: m.name, phone4: m.phone4, org: m.org });
+    }).filter(Boolean);
+  }
+
+  async function requestVerify(name, phone4){
+    if (SERVER.on) {
+      const res = await apiRequest('verifyMember', { name: name, phone4: phone4 });
+      const m = normalizeMember(res.member);
+      if (!m) throw new Error('등록된 회원을 찾지 못했습니다.');
+      return m;
+    }
+    seedDemoMembers();
+    const m = state.members.filter(function(x){
+      return normName(x.name) === normName(name) && String(x.phone4) === String(phone4);
+    })[0];
+    if (!m) throw new Error('등록된 회원을 찾지 못했습니다. 이름과 뒷4자리를 확인해 주세요.');
+    return m;
+  }
+
+  function setMember(m){
+    const prev = state.member;
+    state.member = m || null;
+    state.gateSkipped = false;
+    if (m) {
+      const p0 = cur().players[0];
+      if (p0 && (!p0.name.trim() || (prev && p0.name.trim() === prev.name))) p0.name = m.name;
+    }
+    persist();
+    renderMember();
+    renderSetup();
+    renderBoard();
+    updateSummary();
+    renderHome();
+  }
+
+  function unlinkMember(){
+    if (!state.member) return;
+    if (!confirm(state.member.name + ' 님의 본인확인을 이 휴대폰에서 해제할까요?\n다시 기록하려면 이름과 뒷4자리를 넣어야 합니다.')) return;
+    setMember(null);
+    gatePrompted = true;
+    renderGateCurrent();
+    toast('본인확인을 해제했어요.');
+  }
+
+  /* ---- 시트 열기·닫기 ---- */
+  function openSheet(sel){
+    const el = $(sel);
+    if (!el) return;
+    el.classList.add('open');
+    el.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('sheet-open');
+    const sc = $('.sheet-body', el);
+    if (sc) sc.scrollTop = 0;
+  }
+  function closeSheet(sel){
+    const el = $(sel);
+    if (!el) return;
+    el.classList.remove('open');
+    el.setAttribute('aria-hidden', 'true');
+    if (!$('.sheet.open')) document.body.classList.remove('sheet-open');
+  }
+
+  /* ---- 본인확인 ---- */
+  let gateTarget = null;
+  let gatePrompted = false;
+
+  function openGate(opt){
+    opt = opt || {};
+    gateTarget = opt.target || null;
+    $('#gateErr').hidden = true;
+    $('#gateName').value = '';
+    $('#gatePhone').value = '';
+    $('#gateSkip').hidden = !opt.skippable;
+    $('#gateDemo').hidden = SERVER.on;
+    renderGateCurrent();
+    openSheet('#gateSheet');
+  }
+
+  function renderGateCurrent(){
+    const box = $('#gateCurrent');
+    if (!box) return;
+    if (!state.member) { box.hidden = true; return; }
+    box.hidden = false;
+    $('#gateCurrentAv').textContent = state.member.name.slice(0, 1);
+    $('#gateCurrentName').textContent = state.member.name;
+    $('#gateCurrentSub').textContent = (state.member.org ? state.member.org + ' · ' : '')
+      + (SERVER.on ? '협회 서버에 연결됨' : '데모 모드(이 휴대폰에서만)');
+  }
+
+  function showGateErr(msg){
+    const el = $('#gateErr');
+    el.textContent = msg;
+    el.hidden = false;
+  }
+
+  async function verifyMember(){
+    const name = $('#gateName').value.trim();
+    const phone4 = $('#gatePhone').value.replace(/\D/g, '');
+    $('#gateErr').hidden = true;
+    if (!normName(name)) { showGateErr('이름을 넣어 주세요.'); return; }
+    if (!/^\d{4}$/.test(phone4)) { showGateErr('휴대폰 번호 뒷4자리를 숫자 4자리로 넣어 주세요.'); return; }
+    const btn = $('#gateBtn');
+    const oldText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '확인 중…';
+    try {
+      const m = await requestVerify(name, phone4);
+      setMember(m);
+      closeSheet('#gateSheet');
+      toast(m.name + ' 님, 본인확인 완료했어요.');
+      if (gateTarget) switchTab(gateTarget);
+      gateTarget = null;
+      if (SERVER.on) loadMyRounds();
+    } catch (e) {
+      showGateErr(e && e.message ? e.message : '본인확인을 하지 못했습니다. 잠시 후 다시 해보세요.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = oldText;
+    }
+  }
+
+  function skipGate(){
+    state.gateSkipped = true;
+    gatePrompted = true;
+    persist();
+    closeSheet('#gateSheet');
+    if (gateTarget) { switchTab(gateTarget); gateTarget = null; }
+    renderMember();
+    toast('이 휴대폰에만 기록합니다.');
+  }
+
+  /* ---- 회원 표시 ---- */
+  function renderMember(){
+    const chip = $('#memberChip');
+    const banner = $('#netBanner');
+    if (state.member) {
+      chip.innerHTML = '<span class="ucheck" aria-hidden="true">✓</span>' + esc(state.member.name) + ' 님';
+      chip.classList.add('on');
+      chip.setAttribute('aria-label', state.member.name + ' 님 본인확인됨. 눌러서 회원 정보 보기');
+    } else {
+      chip.textContent = '본인확인';
+      chip.classList.remove('on');
+      chip.setAttribute('aria-label', '회원 본인확인 하기');
+    }
+
+    banner.classList.toggle('demo', !SERVER.on);
+    banner.textContent = SERVER.on
+      ? (state.member ? '서버 연결됨 · 저장한 점수가 협회에 전달됩니다' : '서버 연결됨 · 회원 확인 후 점수가 협회에 저장됩니다')
+      : (CONFIG.apiType !== 'demo'
+          ? '데모 모드(서버 주소 없음) · 기록은 이 휴대폰에만 저장됩니다'
+          : '데모 모드(서버 연결 전) · 기록은 이 휴대폰에만 저장됩니다');
+
+    const strip = $('#memberStrip');
+    if (!strip) return;
+    strip.classList.toggle('guest', !state.member);
+    if (state.member) {
+      strip.innerHTML = `
+        <span class="ms-av" aria-hidden="true">${esc(state.member.name.slice(0, 1))}</span>
+        <span class="ms-txt">
+          <span class="ms-meta"><b>${esc(state.member.name)} 님</b><span class="badge ok">회원 인증됨</span></span>
+          <small>${esc(state.member.org || '한국파크골프교육협회')} · ${SERVER.on ? '저장하면 협회·다른 기기에서도 볼 수 있어요' : '데모 모드라 이 휴대폰에만 저장됩니다'}</small>
+        </span>
+        <button type="button" class="linkbtn" data-act="openGate">변경</button>`;
+    } else {
+      strip.innerHTML = `
+        <span class="ms-av" aria-hidden="true">?</span>
+        <span class="ms-txt">
+          <span class="ms-meta"><b>회원 확인 전</b><span class="badge warn">미인증</span></span>
+          <small>이름과 뒷4자리를 넣으면 점수가 협회에 저장되고 다른 기기에서도 볼 수 있어요.</small>
+        </span>
+        <button type="button" class="linkbtn" data-act="openGate">본인확인</button>`;
+    }
+    const sec = $('#serverSec');
+    if (sec) sec.hidden = !(state.member && SERVER.on);
+  }
+
+  /* ---- 구장 선택 ---- */
+  const COURSE_ETC = '__etc__';
+  function renderCourse(){
+    const sel = $('#courseSel');
+    if (!sel) return;
+    const r = cur();
+    let opts = '<option value="">구장 선택 안 함</option>';
+    CONFIG.courses.forEach(function(c){
+      opts += '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>';
+    });
+    opts += '<option value="' + COURSE_ETC + '">기타(직접 입력)</option>';
+    sel.innerHTML = opts;
+    const known = CONFIG.courses.some(function(c){ return c.name === r.course; });
+    sel.value = r.course ? (known ? r.course : COURSE_ETC) : '';
+    const etc = $('#courseEtc');
+    etc.hidden = sel.value !== COURSE_ETC;
+    if (sel.value === COURSE_ETC && !etc.value) etc.value = r.course;
+  }
+
+  /* ---- 내 서버 기록 ---- */
+  let myRoundsCache = [];
+  let myRoundsLoading = false;
+
+  function safeParse(v){
+    try { return JSON.parse(v); } catch (e) { return []; }
+  }
+  function sumStrokes(list){
+    return (list || []).reduce(function(a, v){ const n = Number(v); return a + (n > 0 ? n : 0); }, 0);
+  }
+  function normalizeServerRound(r){
+    if (!r || typeof r !== 'object') return null;
+    let strokes = Array.isArray(r.strokes) ? r.strokes : null;
+    if (!strokes && typeof r.holeStrokes === 'string') strokes = safeParse(r.holeStrokes);
+    if (!strokes && typeof r.hole_strokes === 'string') strokes = safeParse(r.hole_strokes);
+    strokes = (strokes || []).slice(0, HOLES_MAX).map(function(v){ const n = Number(v); return n > 0 ? Math.round(n) : null; });
+    const holes = Number(r.holes) === 18 ? 18 : 9;
+    const par = Number(r.par) || 0;
+    const total = Number(r.total) || sumStrokes(strokes);
+    return {
+      id: String(r.id || ''),
+      savedAt: Number(r.savedAt) || Date.parse(r.date || '') || Date.now(),
+      course: String(r.course || '').slice(0, 24),
+      holes: holes,
+      par: par,
+      total: total,
+      diff: total - par,
+      strokes: strokes,
+      memberId: String(r.memberId || r.member_id || ''),
+      memberName: String(r.memberName || r.member_name || ''),
+      companions: String(r.companions || '')
+    };
+  }
+
+  async function loadMyRounds(){
+    const box = $('#serverRounds');
+    if (!box || myRoundsLoading) return;
+    if (!state.member || !SERVER.on) { myRoundsCache = []; return; }
+    myRoundsLoading = true;
+    box.innerHTML = '<p class="empty">협회에서 내 기록을 불러오는 중…</p>';
+    try {
+      const res = await apiRequest('myRounds', { memberId: state.member.id });
+      myRoundsCache = (res.rounds || []).map(normalizeServerRound).filter(Boolean);
+      renderMyRounds();
+    } catch (e) {
+      box.innerHTML = '<p class="empty">' + esc(e.message || '기록을 불러오지 못했습니다.') + '</p>';
+    } finally {
+      myRoundsLoading = false;
+    }
+  }
+
+  function renderMyRounds(){
+    const box = $('#serverRounds');
+    if (!box) return;
+    if (!myRoundsCache.length) {
+      box.innerHTML = '<p class="empty">아직 협회에 저장된 내 기록이 없어요. 라운드를 마치고 저장해 보세요.</p>';
+      return;
+    }
+    box.innerHTML = myRoundsCache.slice().sort(function(a, b){ return b.savedAt - a.savedAt; }).map(function(r){
+      return `<article class="arow">
+        <div class="ahead"><b>${fmtShortDate(r.savedAt)}</b>${r.course ? `<span class="chip">${esc(r.course)}</span>` : ''}<span class="chip gray">${r.holes}홀</span><span class="rec-time">${fmtDate(r.savedAt).split(') ')[1]}</span></div>
+        <div class="atotals"><span class="totchip">${esc(r.memberName)} <b>${r.total}</b>타 <em class="${diffClass(r.diff)}">${diffText(r.diff)}</em></span>${r.companions ? `<span class="totchip">함께: ${esc(r.companions)}</span>` : ''}</div>
+      </article>`;
+    }).join('');
+  }
+
+  /* ---- 협회 관리자 ---- */
+  let adminUnlocked = false;
+  let adminPin = '';
+  let adminTab = 'members';
+  let adminMembersCache = [];
+  let adminRoundsCache = [];
+
+  function openAdmin(){
+    adminUnlocked = false;
+    adminPin = '';
+    $('#adminLock').hidden = false;
+    $('#adminMain').hidden = true;
+    $('#adminErr').hidden = true;
+    $('#adminPinInput').value = '';
+    $('#mErr').hidden = true;
+    $('#adminDemo').hidden = SERVER.on;
+    if (!SERVER.on) {
+      $('#adminDemo').innerHTML = '<b>데모 모드(서버 연결 전)</b><p>처음 비밀번호는 <code>' + esc(CONFIG.adminPin) + '</code>입니다. <code>index.html</code>의 <code>CONFIG.adminPin</code>에서 바꿀 수 있어요.</p>';
+    }
+    openSheet('#adminSheet');
+  }
+
+  async function adminUnlock(){
+    const pin = $('#adminPinInput').value.replace(/\D/g, '');
+    const err = $('#adminErr');
+    err.hidden = true;
+    if (pin.length < 4) { err.textContent = '비밀번호 4자리를 넣어 주세요.'; err.hidden = false; return; }
+    const btn = $('#adminUnlockBtn');
+    btn.disabled = true;
+    btn.textContent = '확인 중…';
+    try {
+      if (SERVER.on) {
+        const res = await apiRequest('adminListMembers', { pin: pin });
+        adminMembersCache = (res.members || []).map(normalizeMember).filter(Boolean);
+      } else {
+        if (pin !== String(CONFIG.adminPin)) throw new Error('비밀번호가 맞지 않습니다.');
+        seedDemoMembers();
+        adminMembersCache = state.members.slice();
+      }
+      adminPin = pin;
+      adminUnlocked = true;
+      $('#adminLock').hidden = true;
+      $('#adminMain').hidden = false;
+      renderAdminMembers();
+      switchAdminTab(adminTab);
+    } catch (e) {
+      err.textContent = e && e.message ? e.message : '비밀번호가 맞지 않습니다.';
+      err.hidden = false;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '들어가기';
+    }
+  }
+
+  function switchAdminTab(tab){
+    adminTab = tab === 'rounds' ? 'rounds' : 'members';
+    $$('#adminSeg button').forEach(function(b){ b.classList.toggle('on', b.dataset.admin === adminTab); });
+    $('#adminMembers').hidden = adminTab !== 'members';
+    $('#adminRounds').hidden = adminTab !== 'rounds';
+    if (adminTab === 'rounds') loadAdminRounds();
+  }
+
+  function renderAdminMembers(){
+    const list = adminMembersCache.slice().sort(function(a, b){ return String(a.name).localeCompare(String(b.name), 'ko'); });
+    $('#memberCount').textContent = String(list.length);
+    const box = $('#adminMemberList');
+    if (!list.length) { box.innerHTML = '<p class="empty">등록된 회원이 없습니다. 위에서 새 회원을 등록해 주세요.</p>'; return; }
+    box.innerHTML = list.map(function(m){
+      return `<div class="mrow">
+        <span class="ms-av" aria-hidden="true">${esc(String(m.name).slice(0, 1))}</span>
+        <span class="mline"><b>${esc(m.name)}</b><small>끝번호 ${esc(m.phone4 || '----')}${m.org ? ' · ' + esc(m.org) : ''}</small></span>
+        <button type="button" class="del" data-act="adminDeleteMember" data-id="${esc(m.id)}">삭제</button>
+      </div>`;
+    }).join('');
+  }
+
+  async function refreshAdminMembers(){
+    if (SERVER.on) {
+      const res = await apiRequest('adminListMembers', { pin: adminPin });
+      adminMembersCache = (res.members || []).map(normalizeMember).filter(Boolean);
+    } else {
+      seedDemoMembers();
+      adminMembersCache = state.members.slice();
+    }
+    renderAdminMembers();
+  }
+
+  async function adminAddMember(){
+    const name = $('#mName').value.trim();
+    const phone4 = $('#mPhone').value.replace(/\D/g, '');
+    const org = $('#mOrg').value.trim();
+    const err = $('#mErr');
+    err.hidden = true;
+    if (!normName(name)) { err.textContent = '이름을 넣어 주세요.'; err.hidden = false; return; }
+    if (!/^\d{4}$/.test(phone4)) { err.textContent = '휴대폰 뒷4자리를 숫자 4자리로 넣어 주세요.'; err.hidden = false; return; }
+    if (adminMembersCache.some(function(m){ return normName(m.name) === normName(name) && String(m.phone4) === phone4; })) {
+      err.textContent = '같은 이름과 뒷4자리로 등록된 회원이 이미 있습니다.';
+      err.hidden = false;
+      return;
+    }
+    const btn = $('#mAddBtn');
+    btn.disabled = true;
+    btn.textContent = '등록 중…';
+    try {
+      if (SERVER.on) {
+        const res = await apiRequest('adminAddMember', { pin: adminPin, name: name, phone4: phone4, org: org, note: '' });
+        const m = normalizeMember(res.member);
+        if (m) adminMembersCache.push(m);
+        await refreshAdminMembers();
+      } else {
+        state.members.push(normalizeMember({ id: demoId(name, phone4), name: name, phone4: phone4, org: org }));
+        persist();
+        adminMembersCache = state.members.slice();
+      }
+      $('#mName').value = '';
+      $('#mPhone').value = '';
+      $('#mOrg').value = '';
+      renderAdminMembers();
+      toast(name + ' 님을 회원으로 등록했어요.');
+    } catch (e) {
+      err.textContent = e && e.message ? e.message : '등록하지 못했습니다.';
+      err.hidden = false;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '회원으로 등록';
+    }
+  }
+
+  async function adminDeleteMember(id){
+    const m = adminMembersCache.filter(function(x){ return x.id === id; })[0];
+    if (!m) return;
+    if (!confirm(m.name + ' 님을 회원 명단에서 지울까요?\n지운 회원은 본인확인을 할 수 없게 됩니다. (지난 점수 기록은 남습니다)')) return;
+    try {
+      if (SERVER.on) {
+        await apiRequest('adminDeleteMember', { pin: adminPin, memberId: id });
+      } else {
+        state.members = state.members.filter(function(x){ return x.id !== id; });
+        persist();
+      }
+      adminMembersCache = adminMembersCache.filter(function(x){ return x.id !== id; });
+      renderAdminMembers();
+      toast('회원을 지웠어요.');
+    } catch (e) {
+      toast(e && e.message ? e.message : '지우지 못했습니다.');
+    }
+  }
+
+  function parOf(rec){
+    let s = 0;
+    for (let i = 0; i < rec.holes; i++) s += Number(rec.pars[i]) || 0;
+    return s;
+  }
+
+  function localAdminRounds(){
+    return state.records.map(function(rec){
+      const stats = recordStats(rec);
+      const names = rec.players.map(function(p){ return (p.name || '').trim(); });
+      return {
+        id: rec.id,
+        savedAt: rec.savedAt,
+        course: rec.course || '',
+        holes: rec.holes,
+        par: parOf(rec),
+        source: '이 기기',
+        players: stats.map(function(s, i){
+          return {
+            name: s.name,
+            total: s.sum,
+            diff: s.diff,
+            cnt: s.cnt,
+            companions: names.filter(function(n, j){ return j !== i && n; }).join(', '),
+            strokes: (rec.players[i].strokes || []).slice(0, rec.holes)
+          };
+        })
+      };
+    }).sort(function(a, b){ return b.savedAt - a.savedAt; });
+  }
+
+  function normalizeAdminRound(r){
+    const base = normalizeServerRound(r);
+    if (!base) return null;
+    return {
+      id: base.id,
+      savedAt: base.savedAt,
+      course: base.course,
+      holes: base.holes,
+      par: base.par,
+      source: '서버',
+      companions: base.companions,
+      players: [{
+        name: base.memberName || '회원',
+        total: base.total,
+        diff: base.diff,
+        cnt: base.strokes.filter(function(v){ return v; }).length,
+        strokes: base.strokes
+      }]
+    };
+  }
+
+  async function loadAdminRounds(){
+    const box = $('#adminRoundList');
+    if (!box || !adminUnlocked) return;
+    box.innerHTML = '<p class="empty">점수 기록을 모으는 중…</p>';
+    if (!SERVER.on) {
+      adminRoundsCache = localAdminRounds();
+      renderAdminRounds();
+      return;
+    }
+    try {
+      const res = await apiRequest('adminAllRounds', { pin: adminPin });
+      adminRoundsCache = (res.rounds || []).map(normalizeAdminRound).filter(Boolean);
+      renderAdminRounds();
+    } catch (e) {
+      adminRoundsCache = [];
+      box.innerHTML = '<p class="empty">' + esc(e.message || '기록을 불러오지 못했습니다.') + '</p>';
+      $('#allCount').textContent = '0';
+    }
+  }
+
+  function renderAdminRounds(){
+    const list = adminRoundsCache.slice().sort(function(a, b){ return b.savedAt - a.savedAt; });
+    $('#allCount').textContent = String(list.length);
+    const box = $('#adminRoundList');
+    if (!list.length) {
+      box.innerHTML = '<p class="empty">아직 모인 점수 기록이 없습니다.' + (SERVER.on ? '' : ' 이 휴대폰에서 저장한 라운드가 여기에 모입니다.') + '</p>';
+      return;
+    }
+    box.innerHTML = list.slice(0, 100).map(function(r){
+      const chips = r.players.filter(function(p){ return p.cnt > 0; }).map(function(p){
+        return '<span class="totchip">' + esc(p.name) + ' <b>' + p.total + '</b>타 <em class="' + diffClass(p.diff) + '">' + diffText(p.diff) + '</em></span>';
+      }).join('') || '<span class="totchip">입력 없음</span>';
+      return `<article class="arow">
+        <div class="ahead"><b>${fmtShortDate(r.savedAt)}</b>${r.course ? `<span class="chip">${esc(r.course)}</span>` : ''}<span class="chip gray">${r.holes}홀</span><span class="chip gray">${esc(r.source)}</span><span class="rec-time">${fmtDate(r.savedAt).split(') ')[1]}</span></div>
+        <div class="atotals">${chips}</div>
+      </article>`;
+    }).join('') + (list.length > 100 ? '<p class="empty">최근 100건만 보여 드립니다. 전체는 CSV로 내려받아 보세요.</p>' : '');
+  }
+
+  function pad2(n){ return (n < 10 ? '0' : '') + n; }
+
+  function csvCell(v){
+    const s = String(v == null ? '' : v);
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function buildAdminCSV(){
+    const head = ['날짜', '시간', '구장', '홀수', 'Par합계', '회원', '총타수', 'Par대비'];
+    for (let i = 1; i <= HOLES_MAX; i++) head.push(i + '홀');
+    head.push('동반자', '저장위치');
+    const rows = [head];
+    adminRoundsCache.slice().sort(function(a, b){ return a.savedAt - b.savedAt; }).forEach(function(r){
+      const d = new Date(r.savedAt);
+      const date = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+      const time = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+      r.players.forEach(function(p){
+        if (!p.cnt && !p.total) return;
+        const row = [date, time, r.course || '', r.holes, r.par || '', p.name, p.total, (p.diff > 0 ? '+' : '') + p.diff];
+        for (let i = 0; i < HOLES_MAX; i++) row.push(p.strokes && p.strokes[i] ? p.strokes[i] : '');
+        row.push(p.companions || r.companions || '', r.source || '');
+        rows.push(row);
+      });
+    });
+    return '\uFEFF' + rows.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n');
+  }
+
+  function downloadCSV(){
+    if (!adminRoundsCache.length) { toast('내려받을 기록이 없습니다.'); return; }
+    const d = new Date();
+    const name = '한국파크_점수기록_' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + '.csv';
+    const blob = new Blob([buildAdminCSV()], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 1500);
+    toast('CSV 파일을 내려받았어요. 엑셀에서 열면 됩니다.');
+  }
+
+  /* =========================================================
+     3. 계산
+     ========================================================= */
+  const cur = () => state.round;
+  const holesN = () => cur().holes;
+  const activePlayers = () => cur().players.slice(0, cur().playerCount);
+
+  function parSum(){
+    const r = cur();
+    let s = 0;
+    for (let i = 0; i < r.holes; i++) s += Number(r.pars[i]) || 0;
+    return s;
+  }
+
+  function playerStats(p){
+    const r = cur();
+    let sum = 0, par = 0, cnt = 0;
+    for (let i = 0; i < r.holes; i++) {
+      const v = p.strokes[i];
+      if (typeof v === 'number' && v > 0) { sum += v; par += Number(r.pars[i]) || 0; cnt++; }
+    }
+    return { sum: sum, par: par, cnt: cnt, diff: sum - par };
+  }
+
+  function enteredHoles(){
+    const r = cur();
+    let c = 0;
+    for (let i = 0; i < r.holes; i++) {
+      if (activePlayers().some(p => typeof p.strokes[i] === 'number' && p.strokes[i] > 0)) c++;
+    }
+    return c;
+  }
+
+  function diffText(d){
+    if (d === 0) return '±0';
+    return d > 0 ? '+' + d : String(d);
+  }
+  function diffClass(d){
+    return d > 0 ? 'd-plus' : (d < 0 ? 'd-minus' : 'd-even');
+  }
+
+  function fmtDate(ts){
+    const d = new Date(ts);
+    let h = d.getHours();
+    const ampm = h < 12 ? '오전' : '오후';
+    h = h % 12; if (h === 0) h = 12;
+    return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + DAY_NAME[d.getDay()] + ') ' + ampm + ' ' + h + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  function fmtShortDate(ts){
+    const d = new Date(ts);
+    return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + DAY_NAME[d.getDay()] + ')';
+  }
+
+  function nextClassDate(){
+    const now = new Date();
+    for (let i = 0; i < 10; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, CLASS_HOUR, 0, 0);
+      if (CLASS_DAYS.indexOf(d.getDay()) >= 0 && d.getTime() > now.getTime()) return d;
+    }
+    return null;
+  }
+
+  /* =========================================================
+     4. 화면 그리기
+     ========================================================= */
+  function toast(msg){
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  /* ---- 홈 ---- */
+  function renderHome(){
+    const d = nextClassDate();
+    if (d) {
+      $('#nextClassDate').textContent =
+        (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + DAY_NAME[d.getDay()] + ') 오후 3시';
+    } else {
+      $('#nextClassDate').textContent = '매주 목·토 오후 3시';
+    }
+
+    const sec = $('#recentSec');
+    const card = $('#recentCard');
+    const latest = latestRecord();
+    if (latest) {
+      sec.hidden = false;
+      card.innerHTML = recentRecordHTML(latest);
+    } else {
+      const r = cur();
+      const hasData = activePlayers().some(p => playerStats(p).cnt > 0);
+      if (hasData) {
+        sec.hidden = false;
+        card.innerHTML = `
+          <div class="rec-head"><b>진행 중인 라운드</b><span class="chip">${r.holes}홀</span></div>
+          <div class="rec-totals">${activePlayers().map((p, i) => {
+            const s = playerStats(p);
+            const nm = p.name.trim() || (i + 1) + '번';
+            return s.cnt
+              ? `<span class="totchip">${esc(nm)} <b>${s.sum}</b>타 <em class="${diffClass(s.diff)}">${diffText(s.diff)}</em></span>`
+              : `<span class="totchip">${esc(nm)} <b>–</b></span>`;
+          }).join('')}</div>
+          <button type="button" class="mini ghost" style="margin-top:.7rem;height:42px" data-goto="score">이어서 기록하기</button>`;
+      } else {
+        sec.hidden = true;
+        card.innerHTML = '';
+      }
+    }
+  }
+
+  function recentRecordHTML(r){
+    let s = `<div class="rec-head"><b>${fmtShortDate(r.savedAt)}</b>${r.course ? `<span class="chip">${esc(r.course)}</span>` : ''}<span class="chip">${r.holes}홀</span><span class="rec-time">${fmtDate(r.savedAt).split(') ')[1]}</span></div>`;
+    s += `<div class="rec-totals">${recordStats(r).map(p =>
+      `<span class="totchip">${esc(p.name)} <b>${p.sum}</b>타 <em class="${diffClass(p.diff)}">${diffText(p.diff)}</em></span>`
+    ).join('')}</div>`;
+    s += `<button type="button" class="ghost" style="margin-top:.7rem;height:42px" data-act="openRecords">지난 기록 보기</button>`;
+    return s;
+  }
+
+  /* ---- 스코어 설정 ---- */
+  function applySetupOpen(){
+    const card = $('#setupCard');
+    if (!card) return;
+    card.classList.toggle('collapsed', !setupOpen);
+    $('#setupToggle').setAttribute('aria-expanded', setupOpen ? 'true' : 'false');
+  }
+
+  function renderSetup(){
+    const r = cur();
+    const sum = $('#setupSum');
+    if (sum) sum.textContent = r.holes + '홀 · ' + r.playerCount + '명';
+    applySetupOpen();
+    $$('#holeSeg button').forEach(b => {
+      const on = Number(b.dataset.holes) === r.holes;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    $$('#countSeg button').forEach(b => {
+      const on = Number(b.dataset.count) === r.playerCount;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    renderNames();
+    renderCourse();
+  }
+
+  function renderNames(){
+    const r = cur();
+    $('#names').innerHTML = r.players.slice(0, r.playerCount).map((p, i) => `
+      <div class="namefield">
+        <span class="nfl" aria-hidden="true">${i + 1}</span>
+        <input class="nameinput" type="text" maxlength="10" value="${esc(p.name)}"
+               placeholder="${i === 0 ? '이름 (예: 세미)' : '이름'}"
+               data-name="${i}" aria-label="${i + 1}번 사람 이름" autocomplete="off">
+      </div>`).join('');
+  }
+
+  /* ---- 스코어 보드 ---- */
+  function holeCard(hi){
+    const r = cur();
+    const par = Number(r.pars[hi]) || 4;
+    const rows = activePlayers().map((p, pi) => {
+      const v = p.strokes[hi];
+      const name = p.name.trim() || (pi + 1) + '번';
+      const shown = (typeof v === 'number' && v > 0) ? v : '–';
+      return `
+        <div class="pl">
+          <span class="pname" data-name-p="${pi}">${esc(name)}</span>
+          <button type="button" class="step" data-act="dec" data-p="${pi}" data-h="${hi}"
+                  aria-label="${esc(name)} ${hi + 1}홀 타수 줄이기">−</button>
+          <span class="val ${(typeof v === 'number' && v > 0) ? '' : 'empty'}"
+                data-stroke="${pi}-${hi}">${shown}</span>
+          <button type="button" class="step plus" data-act="inc" data-p="${pi}" data-h="${hi}"
+                  aria-label="${esc(name)} ${hi + 1}홀 타수 늘리기">+</button>
+        </div>`;
+    }).join('');
+
+    return `
+      <section class="hole" data-hole="${hi}">
+        <header class="hole-head">
+          <span class="hole-no">${hi + 1}홀</span>
+          <div class="par" role="group" aria-label="${hi + 1}홀 파">
+            <span class="plabel">Par</span>
+            ${[3,4,5].map(v => `<button type="button" data-act="par" data-h="${hi}" data-v="${v}"
+                 class="${v === par ? 'on' : ''}" aria-pressed="${v === par ? 'true' : 'false'}"
+                 aria-label="${hi + 1}홀 파${v}">${v}</button>`).join('')}
+          </div>
+        </header>
+        ${rows}
+      </section>`;
+  }
+
+  function renderBoard(){
+    const r = cur();
+    const board = $('#board');
+    if (r.view === 'all') {
+      let html = '';
+      for (let i = 0; i < r.holes; i++) html += holeCard(i);
+      board.innerHTML = html;
+    } else {
+      const hi = Math.min(Math.max(0, r.focusHole || 0), r.holes - 1);
+      r.focusHole = hi;
+      board.innerHTML = `
+        <div class="focusbar">
+          <span>${hi + 1} / ${r.holes}홀</span>
+          <span class="focuspar">이 코스 Par ${parSum()}타</span>
+        </div>
+        <div class="progress"><i style="width:${(((hi + 1) / r.holes) * 100).toFixed(1)}%"></i></div>
+        ${holeCard(hi)}
+        <div class="focusnav">
+          <button type="button" data-act="prev" ${hi === 0 ? 'disabled' : ''}>← 이전 홀</button>
+          <button type="button" data-act="next" ${hi >= r.holes - 1 ? 'disabled' : ''}>다음 홀 →</button>
+        </div>`;
+    }
+    renderModeSeg();
+  }
+
+  function renderModeSeg(){
+    $$('#modeSeg button').forEach(b => {
+      const on = b.dataset.mode === cur().view;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  function updateSummary(){
+    const r = cur();
+    const chips = activePlayers().map((p, i) => {
+      const s = playerStats(p);
+      const nm = p.name.trim() || (i + 1) + '번';
+      if (!s.cnt) return `<span class="totchip">${esc(nm)} <b>–</b></span>`;
+      return `<span class="totchip">${esc(nm)} <b>${s.sum}</b>타 <em class="${diffClass(s.diff)}">${diffText(s.diff)}</em></span>`;
+    }).join('');
+    $('#totals').innerHTML = chips +
+      `<span class="totinfo">${enteredHoles()}/${r.holes}홀 · Par ${parSum()}</span>`;
+  }
+
+  /* ---- 기록 ---- */
+  function recordStats(r){
+    const holes = r.holes;
+    return r.players.map((p, i) => {
+      let sum = 0, par = 0, cnt = 0;
+      for (let h = 0; h < holes; h++) {
+        const v = p.strokes[h];
+        if (typeof v === 'number' && v > 0) { sum += v; par += Number(r.pars[h]) || 0; cnt++; }
+      }
+      return { name: (p.name || '').trim() || (i + 1) + '번', sum: sum, diff: sum - par, cnt: cnt };
+    });
+  }
+
+  function latestRecord(){
+    if (!state.records.length) return null;
+    return state.records.slice().sort((a, b) => b.savedAt - a.savedAt)[0];
+  }
+
+  function renderRecords(){
+    const list = state.records.slice().sort((a, b) => b.savedAt - a.savedAt);
+    $('#recordCount').textContent = String(list.length);
+    const box = $('#recordList');
+    if (!list.length) {
+      box.innerHTML = '<p class="empty">아직 저장된 기록이 없어요. 라운드를 마치고 「라운드 저장하기」를 눌러 주세요.</p>';
+      return;
+    }
+    box.innerHTML = list.map(r => `
+      <article class="record">
+        <div class="rec-head">
+          <b>${fmtShortDate(r.savedAt)}</b>
+          ${r.course ? `<span class="chip">${esc(r.course)}</span>` : ''}
+          <span class="chip">${r.holes}홀</span>
+          <span class="rec-time">${fmtDate(r.savedAt).split(') ')[1]}</span>
+          <button type="button" class="rec-del" data-act="delRecord" data-id="${esc(r.id)}">삭제</button>
+        </div>
+        <div class="rec-totals">${recordStats(r).map(p =>
+          p.cnt
+            ? `<span class="totchip">${esc(p.name)} <b>${p.sum}</b>타 <em class="${diffClass(p.diff)}">${diffText(p.diff)}</em></span>`
+            : `<span class="totchip">${esc(p.name)} <b>–</b></span>`
+        ).join('')}</div>
+      </article>`).join('');
+  }
+
+  /* ---- 강습 ---- */
+  function valueHTML(v, kind){
+    if (isPending(v)) return `<span class="pending">${esc(CONFIG.pendingText)}</span>`;
+    if (kind === 'phone') {
+      const tel = String(v).replace(/[^\d+]/g, '');
+      return `<a class="vlink" href="tel:${esc(tel)}">${esc(v)}</a>`;
+    }
+    if (kind === 'kakao') {
+      const url = /^https?:\/\//i.test(String(v)) ? String(v) : 'https://' + String(v);
+      return `<a class="vlink" href="${esc(url)}" target="_blank" rel="noopener">카카오톡 채널 열기</a>`;
+    }
+    return esc(v);
+  }
+
+  function renderClass(){
+    const rows = [
+      ['교육 기관', CONFIG.className, ''],
+      ['강습 요일', CONFIG.classDays, ''],
+      ['강습 시간', CONFIG.classTime, ''],
+      ['장소', CONFIG.classPlace, ''],
+      ['대상', CONFIG.classTarget, ''],
+      ['수강료', CONFIG.classFee, ''],
+      ['전화 문의', CONFIG.phone, 'phone'],
+      ['카카오톡', CONFIG.kakao, 'kakao'],
+      ['대표자', CONFIG.ceo, ''],
+      ['주소', CONFIG.address, '']
+    ];
+    $('#classRows').innerHTML = rows.map(r =>
+      `<div class="row"><dt class="lb">${esc(r[0])}</dt><dd class="vl">${valueHTML(r[1], r[2])}</dd></div>`
+    ).join('');
+
+    const missing = rows.filter(r => isPending(r[1])).map(r => r[0]);
+    const noteEl = $('#classNote');
+    noteEl.textContent = missing.length
+      ? '아직 확정되지 않은 항목(' + missing.join(' · ') + ')은 「준비 중」으로 표시했습니다. 확정되면 이 화면에 바로 나타납니다.'
+      : '';
+    noteEl.hidden = !missing.length;
+
+    $('#courseList').innerHTML = CONFIG.courses.map(c => {
+      const tags = `<span class="chip">${esc(c.area)}</span><span class="chip gray">${esc(c.holes)}</span>`;
+      let lines = `<div><b>주소</b> ${esc(c.address)}</div>`;
+      if (c.hours) lines += `<div><b>운영</b> ${esc(c.hours)}</div>`;
+      if (c.fee) lines += `<div><b>이용료</b> ${esc(c.fee)}</div>`;
+      if (c.closed) lines += `<div><b>휴장</b> ${esc(c.closed)}</div>`;
+      const call = c.phone
+        ? `<a class="callbtn" href="tel:${esc(String(c.phone).replace(/[^\d+]/g, ''))}">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5Z"/></svg>
+             ${esc(c.phone)}</a>`
+        : '';
+      return `<article class="course">
+        <h3>${esc(c.name)}</h3>
+        <div class="tags">${tags}</div>
+        <div class="lines">${lines}</div>
+        ${call}
+      </article>`;
+    }).join('');
+  }
+
+  /* ---- 용품샵 ---- */
+  const SHOP_ICONS = {
+    club: '<path d="M5 19 15.5 5.5"/><path d="M15.5 5.5c1.2-1.5 3.2-1.7 4.3-.6 1.1 1.1.9 3.1-.6 4.3L17 11"/><circle cx="4.5" cy="20" r="1.6"/>',
+    ball: '<circle cx="12" cy="12" r="7.5"/><circle cx="9.4" cy="8.9" r=".95"/><circle cx="13.9" cy="10.1" r=".95"/><circle cx="10.2" cy="13.2" r=".95"/><circle cx="15.1" cy="14.6" r=".95"/><circle cx="12.4" cy="16.6" r=".95"/>',
+    glove: '<path d="M7 21v-6.5L5.2 12a2 2 0 0 1 2.9-2.7L10 11V4.8a1.9 1.9 0 0 1 3.8 0v5.4V6.4a1.9 1.9 0 0 1 3.8 0v5.2l.9-1.4a1.8 1.8 0 0 1 3.1 1.8L19 16.5V21z"/>',
+    set: '<rect x="3.5" y="8" width="17" height="12" rx="2.5"/><path d="M8.5 8V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2"/><path d="M3.5 13h17"/>'
+  };
+
+  function renderShop(){
+    const rows = [
+      ['상호', CONFIG.shopName, ''],
+      ['전화', CONFIG.shopPhone, 'phone'],
+      ['주소', CONFIG.shopAddress, ''],
+      ['운영 시간', CONFIG.shopHours, '']
+    ];
+    $('#shopRows').innerHTML = rows.map(r =>
+      `<div class="row"><dt class="lb">${esc(r[0])}</dt><dd class="vl">${valueHTML(r[1], r[2])}</dd></div>`
+    ).join('');
+
+    $('#shopItems').innerHTML = CONFIG.shopItems.map(it => `
+      <article class="shopitem">
+        <span class="si" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            ${SHOP_ICONS[it.icon] || SHOP_ICONS.set}
+          </svg>
+        </span>
+        <div style="flex:1;min-width:0">
+          <h3>${esc(it.name)}</h3>
+          <p>${esc(it.desc)}</p>
+          <p class="price">${esc(isPending(it.price) ? CONFIG.pendingText : it.price)}</p>
+        </div>
+      </article>`).join('');
+
+    const pendingShop = rows.filter(r => isPending(r[1])).length;
+    $('#shopNote').textContent = (pendingShop ? '매장 정보가 확정되면 전화·주소·운영 시간이 이 화면에 표시됩니다. ' : '')
+      + CONFIG.shopIntro + ' 가격과 재고는 매장에 문의해 주세요.';
+  }
+
+  /* =========================================================
+     5. 동작
+     ========================================================= */
+  function switchTab(name){
+    $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+    $$('.tab').forEach(t => {
+      const on = t.dataset.goto === name;
+      t.classList.toggle('on', on);
+      if (on) t.setAttribute('aria-current', 'page');
+      else t.removeAttribute('aria-current');
+    });
+    $('#summary').classList.toggle('show', name === 'score');
+    if (name === 'score') { updateSummary(); renderBoard(); }
+    if (name === 'home') renderHome();
+    window.scrollTo(0, 0);
+    if (name === 'score' && !state.member && !state.gateSkipped && !gatePrompted) {
+      gatePrompted = true;
+      setTimeout(function(){ openGate({ target: null, skippable: true }); }, 220);
+    }
+  }
+
+  function paintStroke(pi, hi){
+    const v = cur().players[pi].strokes[hi];
+    const ok = (typeof v === 'number' && v > 0);
+    $$('[data-stroke="' + pi + '-' + hi + '"]').forEach(n => {
+      n.textContent = ok ? v : '–';
+      n.classList.toggle('empty', !ok);
+    });
+  }
+
+  function bump(pi, hi, dir){
+    const p = cur().players[pi];
+    if (!p) return;
+    let v = p.strokes[hi];
+    if (dir > 0) {
+      v = (typeof v === 'number' ? v : 0) + 1;
+      if (v > 20) v = 20;
+    } else {
+      if (typeof v !== 'number') return;
+      v = v - 1;
+      if (v < 1) v = null;
+    }
+    p.strokes[hi] = v;
+    persist();
+    paintStroke(pi, hi);
+    updateSummary();
+  }
+
+  function setPar(hi, val){
+    cur().pars[hi] = val;
+    persist();
+    $$('[data-hole="' + hi + '"] .par button').forEach(b => {
+      const on = Number(b.dataset.v) === val;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    updateSummary();
+  }
+
+  function goHole(hi){
+    const r = cur();
+    r.focusHole = Math.min(Math.max(0, hi), r.holes - 1);
+    persist();
+    renderBoard();
+  }
+
+  function setHoles(n){
+    const r = cur();
+    r.holes = (n === 18) ? 18 : 9;
+    if (r.focusHole > r.holes - 1) r.focusHole = r.holes - 1;
+    persist();
+    renderSetup();
+    renderBoard();
+    updateSummary();
+  }
+
+  function setCount(n){
+    const r = cur();
+    r.playerCount = Math.min(4, Math.max(1, n));
+    persist();
+    renderSetup();
+    renderBoard();
+    updateSummary();
+  }
+
+  function resetRound(){
+    const r = cur();
+    if (!confirm('지금 화면의 타수를 모두 지우고 새 라운드를 시작할까요?')) return;
+    const names = r.players.map(p => p.name);
+    state.round = newRound(r.holes, r.playerCount, names);
+    persist();
+    renderSetup();
+    renderBoard();
+    updateSummary();
+    toast('새 라운드를 시작했어요.');
+  }
+
+  function serverRoundPayload(rec, member){
+    const stats = recordStats(rec);
+    const p0 = rec.players[0] || { strokes: [] };
+    const companions = rec.players.slice(1)
+      .map(function(p){ return (p.name || '').trim(); })
+      .filter(Boolean).join(', ');
+    return {
+      id: rec.id,
+      savedAt: rec.savedAt,
+      date: new Date(rec.savedAt).toISOString(),
+      course: rec.course || '',
+      holes: rec.holes,
+      par: parOf(rec),
+      total: stats[0] ? stats[0].sum : 0,
+      strokes: (p0.strokes || []).slice(0, rec.holes),
+      companions: companions,
+      players: stats.map(function(s, i){ return { name: s.name || (i + 1) + '번', total: s.sum }; }),
+      memberId: member.id,
+      memberName: member.name,
+      memberOrg: member.org || ''
+    };
+  }
+
+  async function saveRound(){
+    const r = cur();
+    const hasData = activePlayers().some(p => playerStats(p).cnt > 0);
+    if (!hasData) { toast('먼저 타수를 입력해 주세요.'); return; }
+
+    const existing = state.records.filter(x => x.id === r.id).length > 0;
+    const rec = {
+      id: r.id,
+      savedAt: Date.now(),
+      holes: r.holes,
+      course: r.course || '',
+      pars: r.pars.slice(0, HOLES_MAX),
+      players: activePlayers().map(p => ({ name: p.name.trim(), strokes: p.strokes.slice(0, HOLES_MAX) }))
+    };
+    const idx = state.records.findIndex(x => x.id === rec.id);
+    if (idx >= 0) state.records[idx] = rec;
+    else state.records.unshift(rec);
+    persist();
+    renderRecords();
+    renderHome();
+
+    if (state.member && SERVER.on) {
+      const btn = $('[data-act="save"]');
+      if (btn) { btn.disabled = true; btn.textContent = '협회로 보내는 중…'; }
+      try {
+        await apiRequest('saveRound', { memberId: state.member.id, round: serverRoundPayload(rec, state.member) });
+        toast(state.member.name + ' 님 기록을 협회 서버에 저장했어요.');
+        loadMyRounds();
+      } catch (e) {
+        toast('이 휴대폰에는 저장했지만 협회 서버로는 못 보냈어요. 잠시 후 다시 저장해 주세요.');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '라운드 저장하기'; }
+      }
+      return;
+    }
+
+    if (SERVER.on) {
+      toast('이 휴대폰에 저장했어요. 회원 확인을 하면 협회에도 저장됩니다.');
+      return;
+    }
+    toast(existing ? '이 라운드를 다시 저장했어요.' : '라운드를 저장했어요. 「지난 기록」에서 볼 수 있어요.');
+  }
+
+  function openRecords(){
+    switchTab('score');
+    const body = $('#recordsBody');
+    body.hidden = false;
+    $('#recToggle').textContent = '접기';
+    $('#recToggle').setAttribute('aria-expanded', 'true');
+    setTimeout(() => {
+      const el = $('#records');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }
+
+  function toggleRecords(){
+    const body = $('#recordsBody');
+    const open = body.hidden;
+    body.hidden = !open;
+    $('#recToggle').textContent = open ? '접기' : '보기';
+    $('#recToggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function deleteRecord(id){
+    const rec = state.records.filter(r => r.id === id)[0];
+    if (!rec) return;
+    if (!confirm(fmtShortDate(rec.savedAt) + ' 기록을 지울까요? 지운 기록은 되돌릴 수 없습니다.')) return;
+    state.records = state.records.filter(r => r.id !== id);
+    persist();
+    renderRecords();
+    renderHome();
+    toast('기록을 지웠어요.');
+  }
+
+  /* =========================================================
+     6. 이벤트
+     ========================================================= */
+  document.addEventListener('click', function(e){
+    const goto = e.target.closest('[data-goto]');
+    if (goto) {
+      const name = goto.dataset.goto;
+      switchTab(name);
+      const anchor = goto.dataset.anchor;
+      if (anchor) {
+        setTimeout(function(){
+          const el = document.getElementById(anchor);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 90);
+      }
+      return;
+    }
+
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const act = btn.dataset.act;
+
+    if (act === 'inc' || act === 'dec') {
+      bump(Number(btn.dataset.p), Number(btn.dataset.h), act === 'inc' ? 1 : -1);
+    } else if (act === 'par') {
+      setPar(Number(btn.dataset.h), Number(btn.dataset.v));
+    } else if (act === 'prev') {
+      goHole(cur().focusHole - 1);
+    } else if (act === 'next') {
+      goHole(cur().focusHole + 1);
+    } else if (act === 'save') {
+      saveRound();
+    } else if (act === 'openRecords') {
+      openRecords();
+    } else if (act === 'toggleRecords') {
+      toggleRecords();
+    } else if (act === 'toggleSetup') {
+      setupOpen = !setupOpen;
+      applySetupOpen();
+    } else if (act === 'resetRound') {
+      resetRound();
+    } else if (act === 'delRecord') {
+      deleteRecord(btn.dataset.id);
+    } else if (act === 'openGate') {
+      openGate({ target: null, skippable: false });
+    } else if (act === 'closeGate') {
+      gateTarget = null;
+      closeSheet('#gateSheet');
+    } else if (act === 'verifyMember') {
+      verifyMember();
+    } else if (act === 'skipGate') {
+      skipGate();
+    } else if (act === 'unlinkMember') {
+      unlinkMember();
+    } else if (act === 'openAdmin') {
+      openAdmin();
+    } else if (act === 'closeAdmin') {
+      closeSheet('#adminSheet');
+      adminUnlocked = false;
+    } else if (act === 'adminUnlock') {
+      adminUnlock();
+    } else if (act === 'adminAddMember') {
+      adminAddMember();
+    } else if (act === 'adminDeleteMember') {
+      adminDeleteMember(btn.dataset.id);
+    } else if (act === 'adminRefresh') {
+      refreshAdminMembers().catch(function(e){ toast(e && e.message ? e.message : '불러오지 못했습니다.'); });
+    } else if (act === 'downloadCSV') {
+      downloadCSV();
+    } else if (act === 'loadMyRounds') {
+      loadMyRounds();
+    }
+  });
+
+  document.addEventListener('click', function(e){
+    const hb = e.target.closest('#holeSeg button');
+    if (hb) { setHoles(Number(hb.dataset.holes)); return; }
+    const cb = e.target.closest('#countSeg button');
+    if (cb) { setCount(Number(cb.dataset.count)); return; }
+    const mb = e.target.closest('#modeSeg button');
+    if (mb) {
+      cur().view = mb.dataset.mode === 'all' ? 'all' : 'focus';
+      persist();
+      renderBoard();
+    }
+  });
+
+  $('#names').addEventListener('input', function(e){
+    const input = e.target.closest('input[data-name]');
+    if (!input) return;
+    const pi = Number(input.dataset.name);
+    const r = cur();
+    if (!r.players[pi]) return;
+    r.players[pi].name = input.value.slice(0, 10);
+    const label = r.players[pi].name.trim() || (pi + 1) + '번';
+    $$('[data-name-p="' + pi + '"]').forEach(n => { n.textContent = label; });
+    updateSummary();
+  });
+  $('#names').addEventListener('change', function(){ persist(); });
+
+  $('#courseSel').addEventListener('change', function(){
+    const r = cur();
+    if (this.value === COURSE_ETC) {
+      $('#courseEtc').hidden = false;
+      r.course = $('#courseEtc').value.trim().slice(0, 24);
+      $('#courseEtc').focus();
+    } else {
+      $('#courseEtc').hidden = true;
+      r.course = this.value;
+    }
+    persist();
+  });
+  $('#courseEtc').addEventListener('input', function(){
+    cur().course = this.value.trim().slice(0, 24);
+    persist();
+  });
+
+  $('#adminSeg').addEventListener('click', function(e){
+    const b = e.target.closest('button[data-admin]');
+    if (b) switchAdminTab(b.dataset.admin);
+  });
+
+  ['gateName', 'gatePhone'].forEach(function(id){
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') { e.preventDefault(); verifyMember(); }
+    });
+  });
+  $('#adminPinInput').addEventListener('keydown', function(e){
+    if (e.key === 'Enter') { e.preventDefault(); adminUnlock(); }
+  });
+
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') {
+      const t = $('#toast');
+      t.classList.remove('show');
+      const openSheetEl = $('.sheet.open');
+      if (openSheetEl) {
+        closeSheet('#' + openSheetEl.id);
+        if (openSheetEl.id === 'adminSheet') adminUnlocked = false;
+        gateTarget = null;
+      }
+    }
+  });
+
+  /* =========================================================
+     7. 시작
+     ========================================================= */
+  load();
+  if (!SERVER.on) seedDemoMembers();
+  if (!canStore) {
+    const a = $('.autosave');
+    if (a) a.textContent = '이 브라우저는 저장을 막고 있어요';
+  }
+  setupOpen = !activePlayers().some(function(p){ return playerStats(p).cnt > 0; });
+  renderSetup();
+  renderBoard();
+  updateSummary();
+  renderRecords();
+  renderClass();
+  renderShop();
+  renderHome();
+  renderMember();
+  renderMyRounds();
+
+  /* QR 2번(?mode=member)으로 들어오면 바로 본인확인 */
+  let entryMode = null;
+  try { entryMode = new URLSearchParams(location.search).get('mode'); } catch (e) { entryMode = null; }
+  if (entryMode === 'member') {
+    if (state.member) {
+      switchTab('score');
+      toast(state.member.name + ' 님, 본인확인되어 있어요.');
+    } else {
+      switchTab('home');
+      openGate({ target: 'score' });
+    }
+  } else {
+    switchTab('home');
+  }
+  if (SERVER.on && state.member) loadMyRounds();
+})();
+</script>
+</body>
+</html>
